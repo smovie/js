@@ -1,3 +1,6 @@
+//https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
+//https://github.com/smovie/js/blob/main/util.js
+
 function formatTime(t) {
     var hours   = Math.floor(t / 3600);
     var minutes = Math.floor((t - (hours * 3600)) / 60);
@@ -26,6 +29,9 @@ function $CS(str) { //create node from string
     n.innerHTML = str.trim();
     return n.firstChild;
 }
+// param req default value: 
+// {url: URL, method: 'GET', finalUrl: 'false', isjson: 'false', responseType:'text',headers:Headers, data: PostData}
+// only url is Required
 function XHR(req) {
     var details = {};
     var method = (req.finalUrl)? "HEAD" : req.method || "GET";
@@ -44,4 +50,42 @@ function XHR(req) {
         };
         GM_xmlhttpRequest(details);
     });
+}
+//req default value: 
+//{selector: Selector, callback: Callback, waitOnce: true, interval: 300, maxIntervals: MaxIntervals, onlyFirstNdoe: false}
+// selector and callback is Required
+function waitForElements(req) {
+    var selector = req.selector;
+    var callback = req.callback;
+    var waitOnce = req.waitOnce || true;
+    var interval = req.interval || 300;
+    var maxIntervals = req.maxIntervals || -1;
+    var onlyFirstNdoe = req.onlyFirstNdoe || false;
+    var targetNodes = (selector === "function")? selector() : $All(selector);
+    var targetsFound = targetNodes && targetNodes.length > 0;
+    if (targetsFound) {
+        for (let targetNode of targetNodes) {
+            var attrAlreadyFound = "data-userscript-alreadyFound";
+            var alreadyFound = targetNode.getAttribute(attrAlreadyFound) || false;
+            if (!alreadyFound) {
+                var cancelFound = callback(targetNode);
+                if (cancelFound) {
+                    targetsFound = false;
+                } else {
+                    targetNode.setAttribute(attrAlreadyFound, true);
+                }
+                if (onlyFirstNdoe) {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (maxIntervals !== 0 && !(targetsFound && waitOnce)) {
+        maxIntervals -= 1;
+        setTimeout(function() {
+            waitForElements(req);
+        }, interval);
+    }
+
 }
