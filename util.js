@@ -51,6 +51,18 @@ function XHR(req) {
         GM_xmlhttpRequest(details);
     });
 }
+function getCookie(key) {
+        return document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(key).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1");
+}
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
 //req default value: 
 //{selector: Selector, callback: Callback, waitOnce: true, interval: 300, maxIntervals: MaxIntervals, onlyFirstNdoe: false}
 // selector and callback is Required
