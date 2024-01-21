@@ -1,6 +1,7 @@
 //https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 //https://github.com/smovie/js/blob/main/util.js
 
+// param t is second, not Millisecond 
 function formatTime(t) {
     var hours   = Math.floor(t / 3600);
     var minutes = Math.floor((t - (hours * 3600)) / 60);
