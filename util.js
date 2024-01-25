@@ -43,6 +43,9 @@ function XHR(req) {
     if (req.headers) details.headers = req.headers;
     if (req.data) details.data = req.data;
     if (rspt) details.responseType = rsp;
+    if (typeof req.timeout == "number" && req.timeout > 0) {
+        details.timeout = req.timeout;
+    }
 
     return new Promise((resolve, reject) => {
         details.onload = e =>{
