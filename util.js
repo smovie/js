@@ -52,6 +52,11 @@ function XHR(req) {
             try {resolve((method=='HEAD')? ((req.finalUrl)? e.finalUrl : e.responseHeaders) : ((isjson)? JSON.parse(e.responseText) : ((rspt)? e.response : e.responseText)))}
             catch(e){ reject('XHR error'); }
         };
+        if (details.timeout) {
+            details.ontimeout = e => {
+                resolve('XHR TIMEOUT');
+            };
+        }
         GM_xmlhttpRequest(details);
     });
 }
