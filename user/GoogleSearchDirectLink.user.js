@@ -77,7 +77,7 @@ function unsafeEval(func, opt) {
 }
 
 getOption().then(function run(opt_noopen) {
-    unsafeEval(function(opt_noopen) {
+    //unsafeEval(function(opt_noopen) {
 
         var debug = false;
         var count = 0;
@@ -243,5 +243,5 @@ getOption().then(function run(opt_noopen) {
             document.addEventListener('DOMNodeInserted', checkNewNodes, false);
         }
 
-    }, opt_noopen);
+    //}, opt_noopen);
 });
