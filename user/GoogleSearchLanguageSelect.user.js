@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Google Time & Language Select
-// @namespace    Yamamaya
-// @description  You can select time option and language.
+// @name         Google Search Language Select
+// @namespace    abs
+// @description  You can select language.
 // @include      /https?:\/\/www\.google\.[\w]{2,3}(\.[\w]{2,3})?\/((search|webhp).+|$)/
 // @include      https://encrypted.google.com/*
 // @grant        GM_addStyle
