@@ -1,5 +1,5 @@
 // ==UserScript==
-// @namespace         https://www.github.com/Cat7373/remove-web-limits/
+// @namespace         abs
 // @name              Remove Web Limits
 // @name:zh-CN        网页限制解除（精简优化版）
 // @description       解除大部分网站禁止复制、剪切、选择文本、右键菜单的限制。
