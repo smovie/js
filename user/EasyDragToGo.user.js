@@ -276,7 +276,7 @@
         var menu = document.querySelector('#easyDragMenu') || document.createElement("menu");
         menu.type = "context";
         menu.id = "easyDragMenu";
-        menu.innerHTML = '';
+        menu.replaceChildren();
         var mi;
         if (types.isImage && (!node.complete || node.matches("[src]:-moz-broken"))) {
             mi = document.createElement("menuitem");
