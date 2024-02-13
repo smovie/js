@@ -52,7 +52,7 @@
 
         if (window.screen.height * window.devicePixelRatio < 1080) {
             GM_addStyle('.bili-header .slide-down .center-search-container{margin-bottom:2px;} .header-channel{top:40px;} .bili-header .bili-header__bar{height:40px;} .bili-header{min-height:40px;} \
-                    .header-channel-fixed{max-height:32px;padding: 2px var(--layout-padding, 60px);} .bili-header .red-num--message {top:-2px;}');
+                    .header-channel-fixed{max-height:32px;padding: 2px var(--layout-padding, 60px);} .bili-header .red-num--message, .bili-header .red-num--dynamic {top:-2px;}');
         }
         hideVd = GM_getValue('hideVideo') || {};
         var isModHideVd = false;
