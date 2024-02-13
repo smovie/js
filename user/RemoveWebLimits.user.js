@@ -3,9 +3,8 @@
 // @name              Remove Web Limits
 // @name:zh-CN        网页限制解除（精简优化版）
 // @description       解除大部分网站禁止复制、剪切、选择文本、右键菜单的限制。
-// @homepageURL       https://github.com/xinggsf/gm/
 // @author            Cat73  xinggsf
-// @version           1.5.6
+// @version           1.5.7
 // @license           LGPLv3
 // @include           https://www.zhihu.com/*
 // @include           https://www.bilibili.com/read/*
