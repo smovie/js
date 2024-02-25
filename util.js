@@ -22,7 +22,7 @@ function $All(css, dom) {
 }
 function $C(name, attrs) {
     var n = document.createElement(name);
-    attrs && Object.keys(attrs).forEach(k=>n.setAttribute(k, attrs[k]));
+    attrs && Object.keys(attrs).forEach(k=>{if(k.toLowerCase()=='text') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);});
     return n;
 }
 function $CS(str) { //create node from string
