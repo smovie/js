@@ -23,6 +23,7 @@
     const linkOpenDirection = "R";
     const replaceText = true; // replace selected text in text node when middle click to paste
     const urlRegex = /^\s*(?:(?:(?:ht|f)tps?:\/\/)?(?:(?:[\w-]+?)(?:\.(?:[\w-]+?))*(?:\.(?:[a-zA-Z]{2,5}))|(?:(?:\d+)(?:\.\d+){3}))(?::\d{2,5})?(?:\/\S*|$)|data:text\/[\u0025-\u007a]+)\s*$/;
+    const ipv6Regex = /(^\s*(?:(?:(?:ht|f)tps?:\/\/)?)\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\](:\d+)?))/;
     var searchEngine = "https://www.google.com/search?hl=en&safe=off&filter=0&q="; // default
     var scrollbarWidth;
 	var evts = ["dragstart", "dragover", "drop", "contextmenu", "mousedown", "mouseup", "click", "wheel", "visibilitychange"];
@@ -213,7 +214,7 @@
                     GM_openInTab(eDrag[direction].SIE + imageSrc, { active: false, insert: true });
                 } else if (nodeUrl && direction == linkOpenDirection) { //新标签打开文件(后台)
                     GM_openInTab(nodeUrl, { active: false, insert: true });
-                } else if (urlRegex.test(text) && direction == detectTxtorUrlDirection) {
+                } else if ((urlRegex.test(text) || ipv6Regex.test(text)) && direction == detectTxtorUrlDirection) {
                     GM_openInTab((text.match(/^\s*(https?|ftp):\/\//))? text : "http://" + text);
                 } else {
                     GM_openInTab(searchEngine + encodeURIComponent(linkText || text), { active: false, insert: true });
