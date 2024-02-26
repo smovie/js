@@ -2,7 +2,7 @@
 // @name        Easy Drag To Go
 // @namespace   jerrymouse
 // @include     *
-// @version     1.4.0
+// @version     1.4.1
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @run-at      document-start
