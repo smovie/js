@@ -599,8 +599,8 @@
         });
     }
     function pageTranslateInit() {
-        var s = GM_addStyle('#googlePageTranslate {opacity:0;position: fixed;top: 0;left: 0;width: 16px;height: 16px;line-height: initial;overflow: hidden;cursor: pointer;z-index: 9999999;} \
-                #googlePageTranslate:hover{opacity:1;} #googlePageTranslate::before {content:"⌛";position: fixed;top: 0;left: 0;font-size: 12px;z-index: -1;} \
+        var s = GM_addStyle('#googlePageTranslate {opacity:0;position: fixed;top: 0;left: 0;width: 16px;height: 16px;line-height: initial;overflow: hidden;cursor: pointer;} \
+                #googlePageTranslate:hover{opacity:1;} #googlePageTranslate::before {content:"⌛";position: fixed;top: 0;left: 0;font-size: 12px;z-index: -1;} #googlePageTranslate, iframe.skiptranslate { z-index: 9999999999; } \
                 .goog-te-gadget-icon{width:16px !important;height:16px !important;margin: -2px 0 0 -2px !important;vertical-align: initial !important;} #googlePageTranslate:hover {opacity:1;}');
         if (!s.sheet && document.styleSheets[0]) {
             asideAddStyle(s);
