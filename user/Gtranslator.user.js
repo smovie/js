@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Gtranslator
-// @version     2.3.5
+// @version     2.3.6
 // @description google翻译及发音
 // @note       如果要用HTML5的audio，需发送伪造Referer或者用GM_xmlhttpRequest获取blob
 // @include     *
@@ -531,12 +531,12 @@
             .result_75548 {color: #777777; font-weight: bold;} .result_75548 span:hover {color:black;} .resultTitle_75548 {padding-right:16px;} \
             #gtranslator_75548 a {text-shadow: 1px 1px 1px #CDCDCD;font-size: 14px; font-weight: bold; text-decoration: none; color: #000000; float: left; line-height: 20px;height:20px; text-align: left;cursor:pointer; } \
             #gtranslator_75548 #speakTo_75548:hover, #moreDetails_75548:hover, #ptbtn_75548:hover, #speakFrom_75548:hover, #exchange_75548:hover, #translate_75548:hover {opacity:1;} \
-            #exchange_75548 {min-height:20px;max-height:20px;min-width:15px;max-width:20px;padding: 0;margin: 0;background: none repeat scroll 0% 0% #009AFD;color: #FFF;border: 1px solid #1777B7;box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3) inset, 0px 1px 1px rgba(100, 100, 100, 0.3);border-radius: 3px;cursor: pointer;opacity:0.9; font-size: 12px;} \
+            #exchange_75548 {min-width: 15px; max-width: 20px; background: none repeat scroll 0% 0% #009AFD; color: #FFF; border: 1px solid #1777B7; box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3) inset, 0px 1px 1px rgba(100, 100, 100, 0.3); border-radius:3px; opacity:0.9;} \
             #langSelect_75548 {display:none;color:black;font-size:12px;max-height:20px;} #nextHTML5Audio1_75548, #nextHTML5Audio2_75548 {visibility:hidden;} \
             #langSelectFrom_75548,#langSelectTo_75548 {width:auto;height:auto;padding:0px;margin:0px;font-size:12px;} \
             #gbar_75548 {width:100%;background: -moz-linear-gradient(center top , #FFF 0%, #F1F1F1 100%) repeat scroll 0 0 transparent;height:20px; border-radius: 4px 4px;} \
-            #fromlabel_75548 {min-height: 20px;max-height: 20px;min-width:35px;max-width:40px;border: none;font-size: 12px;} #fromlabel_75548::-moz-focus-inner {border: 0;} \
-            #gtranslator_75548 #moreDetails_75548, #gtranslator_75548 #ptbtn_75548 {height:16px;width:16px;float:right;} \
+            #langSelect_75548 > button {line-height: 1;min-height: 15px;max-height: 20px;font-size: 12px;padding: 0;margin: 0;cursor: pointer;} \
+            #fromlabel_75548 {min-width:35px;max-width:40px;border:none;} #fromlabel_75548::-moz-focus-inner {border: 0;} #gtranslator_75548 #moreDetails_75548, #gtranslator_75548 #ptbtn_75548 {height:16px;width:16px;float:right;} \
             .showCom_75548 #translate_75548,.showCom_75548 #word_75548{display:none;} #gtranslator_75548.showCom_75548 #gres_75548 {display:block;} \
             .showCom_75548 #speakFrom_75548, #gtranslator_75548.showCom_75548 #speakTo_75548 {display:inline-block;} .showCom_75548 #langSelect_75548 {display:inline-flex;} \
             #gtranslator_75548.showCom_75548{width:auto;display:block;} .showCom_75548 #gbar_75548{margin:0 2px 0 2px;width:calc(100% - 4px);} \
