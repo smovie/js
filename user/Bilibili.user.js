@@ -163,7 +163,7 @@
                 else {waitForElements({selector:selector, callback: n=>n.click(), maxIntervals:100});}
             }
         };
-        if (isChrome) {
+        /*if (isChrome) {
             pl.onwheel = e => {
                 var d = (Math.abs(e.deltaY) > Math.abs(e.deltaX))? e.deltaY : e.deltaX;
                 var step = (d>0)? -volumeStep : volumeStep;
@@ -171,7 +171,7 @@
                 e.stopPropagation();
                 changeVolume(step);
             };
-        }
+        }*/
         v.oncanplay = function() {
             waitForElements({selector: '.bpx-player-shadow-progress-area', callback: showTimeLineInFullMode});
             var t = $('div[name="time_textarea"]');
