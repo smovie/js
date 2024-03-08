@@ -3,7 +3,7 @@
 // @author      Jerrymouse
 // @namespace   nana_vao_bilibili
 // @description B站的h5播放相关，原生右键菜单、显示时间线
-// @version     0.2.4
+// @version     0.2.5
 // @include     /https?:\/\/([^\.]+\.)?bilibili\.com/
 // @grant       unsafeWindow
 // @grant       GM_addStyle
