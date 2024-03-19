@@ -4,7 +4,7 @@
 // @name:zh-CN        网页限制解除（精简优化版）
 // @description       解除大部分网站禁止复制、剪切、选择文本、右键菜单的限制。
 // @author            Cat73  xinggsf
-// @version           1.5.8
+// @version           1.5.9
 // @license           LGPLv3
 // @include           https://www.zhihu.com/*
 // @include           https://www.bilibili.com/read/*
@@ -52,8 +52,7 @@
 // @include           *://*.shankuwang.com/*
 // @include           *.yinghuacd.com/*
 // @include           *.yhdmjx.com/*
-// @include           *.mxdm9.com/*
-// @include           *.wjys.cc/*
+// @include     /https?:\/\/[\w]+\.(mxdm\d\.com|wjys\.cc)\/.*/
 // @include           *.dm233.cc/*
 // @include           *.gqyy8.com*
 // @include           *.dietitianbread.com/*
