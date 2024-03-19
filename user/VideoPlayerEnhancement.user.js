@@ -11,7 +11,7 @@
 // @match       https://*.pornhub.com/*
 // @match       https://live.qq.com/*
 // @match       https://*.cctv.com/*
-// @include     /https?:\/\/[\w]+\.(mxdm9\.com|wjys\.cc)\/.*/
+// @include     /https?:\/\/[\w]+\.(mxdm\d\.com|wjys\.cc)\/.*/
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 // @grant       unsafeWindow
 // @grant       GM_addStyle
@@ -41,7 +41,7 @@
         conf = qqLive();
     } else if (loc.match(/\.cctv\.com\//)) {
         conf = cctv();
-    } else if (loc.match(/mxdm9\.com|wjys\.cc/)) {
+    } else if (loc.match(/mxdm\d\.com|wjys\.cc/)) {
         conf = mxdm();
     }
 
