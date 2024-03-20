@@ -5,12 +5,12 @@
 // @include     https://bgm.tv/*
 // @include     https://movie.douban.com/subject/*
 // @include     https://www.bilibili.com/bangumi/*
-// @include     /https://www\.(mxdm9\.com|wjys\.cc)\/.*/
+// @include     /https://www\.(mxdm\d\.com|wjys\.cc)\/.*/
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.1
+// @version     0.1.2
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -86,7 +86,7 @@
                         #rateinfo, .rateresult, .rateresult li {border: 1px solid pink; overflow: hidden;} .main-container .media-info .media-right {padding-left:180px;} \
                         .rateresult .result {height: 28px;} .rateresult .rate_score{margin-top: -3px;} .media-rating{left:450px;}');
         }
-    } else if (loc.match(/mxdm9\.com\/dongman|wjys\.cc\/vod(play|detail)/)) {
+    } else if (loc.match(/mxdm\d\.com\/dongman|wjys\.cc\/vod(play|detail)/)) {
         GM_addStyle('.box {margin-bottom:5px;} .player-block, .player-info {padding-top:0;} .header-content {height: 50px;} #header{padding-top: 50px !important;} \
                 .page #header {margin-bottom:0;} .view .video-info{display: inline-block;width:calc(100% - 380px);} #rateinfo{float: right; width:380px;position:relative;} \
                 .video-cover{right:415px; position: absolute;} .player-box-side, .player-box-side .module-tab {max-height: 220px; } .player-info{display: inline-block;} \
@@ -416,7 +416,7 @@
     var init = ()=> {
         console.log('oname:', oname, 'cname:', cname);
         if (insertPos) {
-            if (loc.match(/www\.bilibili\.com\/bangumi\/media\/|\.mxdm9\.com\/dongman|\.wjys\.cc\/vod/)) {
+            if (loc.match(/www\.bilibili\.com\/bangumi\/media\/|\.mxdm\d\.com\/dongman|\.wjys\.cc\/vod/)) {
                 insertPos.appendChild(pn);
             } else if (loc.match('https://www.bilibili.com/bangumi/play/')) {
                 $('#media_module img').onload = ()=> {insertPos.insertAdjacentElement('afterbegin', pn);};
@@ -470,7 +470,7 @@
     addUnionSearch(); // not finished yet
     function addUnionSearch() {
         var sites = {Douban: 'https://www.douban.com/search?cat=1002&q={keyword}', Age: 'https://www.agedm.org/search?query={keyword}',
-                     Bilibili: 'https://search.bilibili.com/bangumi?search_source=5&keyword={keyword}', Mx: 'https://www.mxdm9.com/search/-------------.html?wd={keyword}',
+                     Bilibili: 'https://search.bilibili.com/bangumi?search_source=5&keyword={keyword}', Mx: 'https://www.mxdm6.com/search/-------------.html?wd={keyword}',
                      Bgm: 'https://bgm.tv/subject_search/{keyword}?cat=2', Wjys: 'https://www.wjys.cc/vodsearch.html?wd={keyword}'};
         var us = $C('select', {id:'unionSearch', style:'color: orange; background: black;font-size:16px;'});
         for (const [k, v] of Object.entries(sites)) {
