@@ -10,7 +10,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.4
+// @version     0.1.5
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -29,7 +29,7 @@
     var year, oname, cname, biliSid;
     var loc = location.href;
     var isMini = false;
-    var marks = /’|‘|\'|“|”|\"|【|\[|】|\]|｛|\{|｝|\}|，|,|：|:|《|\<|》|\>|。|\.|？|\?|！|\!|￥|\$|无修/g;
+    var marks = /[^\u2E80-\u2FDF\u3040-\u318F\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF0-9A-Za-z]+|无修/g;
 
     if (loc.match(/https:\/\/www\.age(fans|mys|dm)\.[\w]+/)) {
         var node = $('.detail_imform_name, #detailname a,.video_detail_title, .video_play_detail_wrapper .card-title');
