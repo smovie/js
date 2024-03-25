@@ -10,7 +10,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.3
+// @version     0.1.4
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -470,7 +470,7 @@
     addUnionSearch(); // not finished yet
     function addUnionSearch() {
         var sites = {Douban: 'https://www.douban.com/search?cat=1002&q={keyword}', Age: 'https://www.agedm.org/search?query={keyword}',
-                     Bilibili: 'https://search.bilibili.com/bangumi?search_source=5&keyword={keyword}', Mx: 'https://www.6.com/search/-------------.html?wd={keyword}',
+                     Bilibili: 'https://search.bilibili.com/bangumi?search_source=5&keyword={keyword}', Mx: 'https://www.mxdm6.com/search/-------------.html?wd={keyword}',
                      Bgm: 'https://bgm.tv/subject_search/{keyword}?cat=2', Wjys: 'https://www.wjys.cc/vodsearch.html?wd={keyword}'};
         var us = $C('select', {id:'unionSearch', style:'color: orange; background: black;font-size:16px;'});
         for (const [k, v] of Object.entries(sites)) {
