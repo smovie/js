@@ -91,7 +91,7 @@
                 .page #header {margin-bottom:0;} .view .video-info{display: inline-block;width:calc(100% - 380px);} #rateinfo{float: right; width:380px;position:relative;} \
                 .video-cover{right:415px; position: absolute;} .player-box-side .module-tab {max-height: 220px; } .player-info{display: inline-block;} \
                 .play .player-side-playlist .module-blocklist a {margin:2px; line-height:30px;font-size:16px;} .player-box-side, .tab-list.selected {max-height: 480px;} \
-                .player-side-playlist{padding: 5px 20px 5px 20px;} .player-side-tab .module-tab-item {padding:6px;}');
+                .player-side-playlist{padding: 5px 20px 5px 20px;} .player-side-tab .module-tab-item {padding:6px;} #rateinfo{z-index:9;}');
         if (loc.match(/vodplay/)) {
             GM_addStyle('#rateinfo {color:white;} #rateinfo a{color:darkgray;}');
         }
