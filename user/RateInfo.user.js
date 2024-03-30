@@ -10,7 +10,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.6
+// @version     0.1.7
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -90,7 +90,7 @@
         GM_addStyle('.box {margin-bottom:5px;} .player-block, .player-info {padding-top:0;} .header-content {height: 50px;} #header{padding-top: 50px !important;} \
                 .page #header {margin-bottom:0;} .view .video-info{display: inline-block;width:calc(100% - 380px);} #rateinfo{float: right; width:380px;position:relative;} \
                 .video-cover{right:415px; position: absolute;} .player-box-side .module-tab {max-height: 220px; } .player-info{display: inline-block;} \
-                .play .player-side-playlist .module-blocklist a {margin:2px; line-height:30px;font-size:16px;} .player-box-side{max-height: 480px;}  .tab-list.selected {max-height: 441px;} \
+                .play .player-side-playlist .module-blocklist a {margin:2px; line-height:30px;font-size:16px;} .player-box-side, .tab-list.selected {max-height: 480px;} \
                 .player-side-playlist{padding: 5px 20px 5px 20px;} .player-side-tab .module-tab-item {padding:6px;}');
         if (loc.match(/vodplay/)) {
             GM_addStyle('#rateinfo {color:white;} #rateinfo a{color:darkgray;}');
