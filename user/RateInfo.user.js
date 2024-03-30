@@ -10,7 +10,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.5
+// @version     0.1.6
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -449,7 +449,7 @@
             }
         });
     } else if (cname) {
-        var bgmSearchApi = `https://api.bgm.tv/search/subject/${encodeURIComponent(cname.replace(marks, ' '))}?type=2`;
+        var bgmSearchApi = `https://api.bgm.tv/search/subject/${encodeURIComponent(cname.replace(marks, ' ').trim())}?type=2`;
         console.log(bgmSearchApi);
         XHR({url:bgmSearchApi, headers: {Referer: 'https://bgm.tv'}, isjson:true}).then(r=>{
             if (r.results > 0) {
