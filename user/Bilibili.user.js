@@ -3,7 +3,7 @@
 // @author      Jerrymouse
 // @namespace   nana_vao_bilibili
 // @description B站的h5播放相关，原生右键菜单、显示时间线
-// @version     0.2.5
+// @version     0.2.6
 // @include     /https?:\/\/([^\.]+\.)?bilibili\.com/
 // @grant       unsafeWindow
 // @grant       GM_addStyle
@@ -503,7 +503,8 @@
     GM_addStyle(".player-mode-webfullscreen {overflow:hidden;}");
     GM_addStyle('#dbrating::before {content: "豆";color: green;font-size: 10px;font-weight: bold;} .media-rating {position: absolute;top: 22px;left: 420px;} #dbrating{position: absolute;left: 490px;top: 22px;height:44px;} #media_module .up-info-wrapper{float:right;margin-top:20px;}');
     GM_addStyle('#app {margin-top:0;} #toolbar_module{height:30px;} .media-wrapper {padding-top: 5px !important;} #media_module{padding-top: 6px;}');
-    GM_addStyle(".bili-video-card__wrap > a, .bili-dyn-card-video {animation:bvca 1ms; outline:none;} @keyframes bvca{from{opacity:.9;}to{opacity:1;}} .vlike::before {content: '👍 '; }");
+    // block video or author, bilibili has included this function
+    //GM_addStyle(".bili-video-card__wrap > a, .bili-dyn-card-video {animation:bvca 1ms; outline:none;} @keyframes bvca{from{opacity:.9;}to{opacity:1;}} .vlike::before {content: '👍 '; }");
 
     if (location.href.match(/^https?:\/\/www\.bilibili\.com\/bangumi\//)) {
         GM_addStyle(".bilibili-player-video-subtitle {display: none !important;}");
