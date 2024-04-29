@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Gtranslator
-// @version     2.3.7
+// @version     2.3.8
 // @description google翻译及发音
 // @note       如果要用HTML5的audio，需发送伪造Referer或者用GM_xmlhttpRequest获取blob
 // @include     *
