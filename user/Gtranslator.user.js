@@ -5,6 +5,7 @@
 // @note       如果要用HTML5的audio，需发送伪造Referer或者用GM_xmlhttpRequest获取blob
 // @include     *
 // @grant       GM_xmlhttpRequest
+// @grant       GM_setClipboard
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_addStyle
@@ -148,7 +149,7 @@
               lsf.title = $("#langSelectFrom_75548 option[value='"+ speakLangFrom +"']").textContent;
          }
          var mLink = GTDWeb + "/#" + lsf.value + "/" + $('#langSelectTo_75548').value + "/" + encodeURIComponent($('#word_75548').textContent);
-         $("#gres_75548").lastChild.insertAdjacentHTML('beforeend', '<a id="moreDetails_75548" href="' + mLink + '" target="_blank" title="More"></a><a id="ptbtn_75548" href="javascript:void();" title="Page translate"></a>');
+         $("#gres_75548").lastChild.insertAdjacentHTML('beforeend', '<a id="moreDetails_75548" href="' + mLink + '" target="_blank" title="More"></a><a id="ptbtn_75548" href="javascript:void();" title="Page translate"></a><a id="ttcopy_75548" href="javascript:void();" title="copy translated"></a>');
          $("#ptbtn_75548").onclick = ()=> {
              if (isPageTranslateInit) {
                  $('.goog-te-gadget-simple').click();
@@ -156,6 +157,9 @@
                  addTrans();
              }
          };
+	$("#ttcopy_75548").onclick = ()=> {
+	    GM_setClipboard($('.resultTitle_75548').textContent);
+	};
      }
 
      function selectLangChange() {
@@ -525,18 +529,18 @@
             .gbox_75548 {border:3px solid;border-color: red deepskyblue green gold;} .bbox_75548 {border:3px solid deepskyblue;} \
             #speakFrom_75548 {width:16px;display:inline-block;display:none;opacity:0.55;} \
             #gtranslator_75548 #speakTo_75548 {width:16px;display:inline-block;display:none;opacity:0.55;float:right;} #langSelect_75548 select {border: 1px solid white;} \
-            #speakFrom_75548::before, #speakTo_75548::before {content: '\\" + volIcon + "';} \
-            #moreDetails_75548, #ptbtn_75548 {display:inline-block;opacity:0.55;} #moreDetails_75548::before {content: '↗';} #ptbtn_75548::before {content: '📜';font-size:10px;} \
+            #speakFrom_75548::before, #speakTo_75548::before {content: '\\" + volIcon + "';} #ttcopy_75548::before {content: '📝';font-size:10px;} \
+            #moreDetails_75548, #ptbtn_75548, #ttcopy_75548 {display:inline-block;opacity:0.55;} #moreDetails_75548::before {content: '↗';} #ptbtn_75548::before {content: '📜';font-size:10px;} \
             #gtranslator_75548 #gres_75548 {display:none;margin:2px;background: -moz-linear-gradient(center top , #EBEBEB, #FFFFFF) repeat scroll 0 0 transparent;font-size: 12px; line-height: 16px; width:calc(100% - 4px);max-width: 300px; text-align: left; word-wrap: break-word;} \
             .result_75548 {color: #777777; font-weight: bold;} .result_75548 span:hover {color:black;} .resultTitle_75548 {padding-right:16px;} \
             #gtranslator_75548 a {text-shadow: 1px 1px 1px #CDCDCD;font-size: 14px; font-weight: bold; text-decoration: none; color: #000000; float: left; line-height: 20px;height:20px; text-align: left;cursor:pointer; } \
-            #gtranslator_75548 #speakTo_75548:hover, #moreDetails_75548:hover, #ptbtn_75548:hover, #speakFrom_75548:hover, #exchange_75548:hover, #translate_75548:hover {opacity:1;} \
+            #gtranslator_75548 #speakTo_75548:hover, #moreDetails_75548:hover, #ptbtn_75548:hover, #ttcopy_75548:hover, #speakFrom_75548:hover, #exchange_75548:hover, #translate_75548:hover {opacity:1;} \
             #exchange_75548 {min-width: 15px; max-width: 20px; background: none repeat scroll 0% 0% #009AFD; color: #FFF; border: 1px solid #1777B7; box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3) inset, 0px 1px 1px rgba(100, 100, 100, 0.3); border-radius:3px; opacity:0.9;} \
             #langSelect_75548 {display:none;color:black;font-size:12px;max-height:20px;} #nextHTML5Audio1_75548, #nextHTML5Audio2_75548 {visibility:hidden;} \
             #langSelectFrom_75548,#langSelectTo_75548 {width:auto;height:auto;padding:0px;margin:0px;font-size:12px;} \
             #gbar_75548 {width:100%;background: -moz-linear-gradient(center top , #FFF 0%, #F1F1F1 100%) repeat scroll 0 0 transparent;height:20px; border-radius: 4px 4px;} \
             #langSelect_75548 > button {line-height: 1;min-height: 15px;max-height: 20px;font-size: 12px;padding: 0;margin: 0;cursor: pointer;} \
-            #fromlabel_75548 {min-width:35px;max-width:40px;border:none;} #fromlabel_75548::-moz-focus-inner {border: 0;} #gtranslator_75548 #moreDetails_75548, #gtranslator_75548 #ptbtn_75548 {height:16px;width:16px;float:right;} \
+            #fromlabel_75548 {min-width:35px;max-width:40px;border:none;} #fromlabel_75548::-moz-focus-inner {border: 0;} #gtranslator_75548 #moreDetails_75548, #gtranslator_75548 #ptbtn_75548, #gtranslator_75548 #ttcopy_75548 {height:16px;width:16px;float:right;} \
             .showCom_75548 #translate_75548,.showCom_75548 #word_75548{display:none;} #gtranslator_75548.showCom_75548 #gres_75548 {display:block;} \
             .showCom_75548 #speakFrom_75548, #gtranslator_75548.showCom_75548 #speakTo_75548 {display:inline-block;} .showCom_75548 #langSelect_75548 {display:inline-flex;} \
             #gtranslator_75548.showCom_75548{width:auto;display:block;} .showCom_75548 #gbar_75548{margin:0 2px 0 2px;width:calc(100% - 4px);} \
