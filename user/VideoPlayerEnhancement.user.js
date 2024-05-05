@@ -9,8 +9,11 @@
 // @include     /https:\/\/(www|m)\.youtube\.com\/watch.+/
 // @match       https://*.sp-flv.com*/*
 // @match       https://*.pornhub.com/*
+// @match       https://player.hanime.tv/*
+// @match       https://hanime1.me/*
 // @match       https://live.qq.com/*
 // @match       https://*.cctv.com/*
+// @match       http://127.0.0.1/*
 // @include     /https?:\/\/[\w]+\.(mxdm\d\.com|wjys\.cc)\/.*/
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 // @grant       unsafeWindow
@@ -23,6 +26,7 @@
     var volumeStep = 0.05;
     var playbackTurbo = 2;
     var playbackRateTemp = 1;
+    var isFastPlay = false;
     var conf = {};
     var vpeInited = false;
     if (loc.includes('douyu.com')) {
@@ -35,6 +39,10 @@
         conf = agefans();
     } else if (loc.match(/vip\.mfhd\.me|pornhub\.com|ph666.me/)) {
         conf = phub();
+    } else if (loc.match(/hanime\.tv/)) {
+        conf = hanime();
+    } else if (loc.match(/hanime1\.me/)) {
+        conf = hanime1();
     } else if (loc.match(/\.youtube\.com\/watch/)) {
         conf = youtube();
     } else if (loc.match(/live\.qq\.com\/\d+/)) {
@@ -43,6 +51,8 @@
         conf = cctv();
     } else if (loc.match(/mxdm\d\.com|wjys\.cc/)) {
         conf = mxdm();
+    } else {
+        conf = common();
     }
 
     vpe(conf);
@@ -50,14 +60,22 @@
     function vpe(configs) {
         GM_addStyle('#vpeInfoPanel {text-align: center;opacity: 0;cursor: default;} \
             #vpeCenterInfo{white-space: pre-line;position: absolute;left: 50%;top: 50%;transform:translate(-50%, -50%);width: auto;height: 30px;font-weight: 1000;font-size: 24px;-webkit-text-fill-color: #fff;-webkit-text-stroke: 1px #000;font-weight: 1000;z-index: 9999;} \
-            #vpeTopInfo {position: absolute;left: 0;top: 0;font-size: 20px;width: auto;height: 30px;z-index: 9999;color:#db3c8e;text-shadow: black 1px 0px 1px, black 0px 1px 1px, black 0px -1px 1px, black -1px 0px 1px;} \
+            #vpeTopInfo {position: absolute;left: 50%;top: 0;font-size: 20px;width: auto;height: 30px;z-index: 9999;color:#db3c8e;text-shadow: black 1px 0px 1px, black 0px 1px 1px, black 0px -1px 1px, black -1px 0px 1px;} \
+            .topInfoAnima {animation-name: fastPlay; animation-duration: 1s; animation-iteration-count: infinite;} \
+            @keyframes fastPlay { from {opacity: 1;} to {opacity: 0.5;} } \
             .vpeIcon::before {content: attr(vpeIcon);display:inline-block;width:36px;}'); //color: transparent;text-shadow: 0 0 0 #dd318a;-webkit-text-fill-color: transparent;-webkit-text-stroke: transparent;
         var c = configs || {};
         var vs = configs.videoSelector || 'video';
         var vpeInit = ()=> {
             if (!video) return;
-            if (c.videoVolume) video.volume = c.videoVolume;
-            else if (localStorage.videoVolume) video.volume = localStorage.videoVolume;
+            if (c.videoVolume) {
+                video.volume = c.videoVolume;
+            } else if (localStorage.videoVolume) {
+                video.volume = localStorage.videoVolume;
+            }
+            if (c.init) {
+                c.init();
+            }
             infoPanel = c.infoPanel || video.parentNode;
             var clearTimer = 0;
             var icon = '';
@@ -89,6 +107,12 @@
             var toggleDanmu = c.toggleDanmu || function() {
 
             };
+            var whenVideoPlaying = c.whenVideoPlaying || function() {
+
+            };
+            video.onplaying = e => {
+                whenVideoPlaying();
+            };
             unsafeWindow.toggleInfoPanel = (info) => {
                 if (!$('#vpeInfoPanel')) {
                     infoPanel.appendChild(infoDiv);
@@ -102,7 +126,7 @@
                 }
                 clearTimer = setTimeout(()=>{
                     centerSpan.classList.remove('vpeIcon');
-                    infoDiv.style.opacity = '0';
+                    if (!isFastPlay) infoDiv.style.opacity = '0';
                     centerSpan.textContent = '';
                     infoDiv.style.transition = 'all 0.5s ease 1s';
                 }, 1e3);
@@ -152,6 +176,15 @@
                 video.playbackRate = abs? video.playbackRate = r : video.playbackRate + r;
                 var ri = (Number(video.playbackRate.toFixed(2)) == 1)? '▶ ' : '⏩ ';
                 toggleInfoPanel(ri + video.playbackRate.toFixed(2).replace(/0$/, '') + 'x');
+                if (r >= 2) {
+                    $('#vpeTopInfo').textContent = '▶▶▶▶'.substring(0,r);
+                    $('#vpeTopInfo').classList.add('topInfoAnima');
+                    isFastPlay = true;
+                } else if (isFastPlay) {
+                    $('#vpeTopInfo').classList.remove('topInfoAnima');
+                    $('#vpeTopInfo').textContent = '';
+                    isFastPlay = false;
+                }
             };
             wheelPanel.addEventListener('wheel', e => {
                 var d = (Math.abs(e.deltaY) > Math.abs(e.deltaX))? e.deltaY : e.deltaX;
@@ -213,16 +246,22 @@
                 if (isTextNode(e.target)) {
                     return;
                 }
+                if (['KeyW','KeyD','KeyF','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
                 switch(e.code) {
                     case 'ControlRight':;
                     case 'ShiftRight':;
                     case 'Period':;
-                    case 'Numpad6': changeVideoRate(playbackRateTemp, true);break;
+                    case 'Numpad6': changeVideoRate(playbackRateTemp, true);video.currentTime = video.currentTime;break;
                 }
             },true);
 
-            window.addEventListener('beforeunload', e => {
-                localStorage.videoVolume = video.volume;
+            window.addEventListener('beforeunload', c.beforeunload || function(e) {
+                if (localStorage.videoVolume != video.volume) {
+                    localStorage.videoVolume = video.volume;
+                }
             });
             vpeInited = true;
         };
@@ -320,6 +359,17 @@
             },
             toggleDanmu: function() {
 
+            },
+            beforeunload: function(e) {
+                var uid = __LIVE_USER_LOGIN_STATUS__ && __LIVE_USER_LOGIN_STATUS__.uid;
+                if (uid) {
+                    var cfg = JSON.parse(localStorage['web-player-ui-config:'+uid]);
+                    var vol = ($('video').volume * 100).toFixed(0);
+                    if (cfg.volume.value != vol) {
+                        cfg.volume.value = vol;
+                        localStorage['web-player-ui-config:'+uid] = JSON.stringify(cfg);
+                    }
+                }
             },
             get wheelPanel() {
                 return $('.bilibili-live-player-video-area, #live-player');
@@ -634,12 +684,20 @@
     }
     function phub() {
         GM_addStyle('body.fullpage .wide video-element,body.fullpage  .wide .video-element-wrapper-js{position: fixed !important; width: 100%; height: 100%; z-index: 5; } \
-                body.fullpage .dialog.rounded-container{z-index:6;} body.fullpage #header {z-index: -1;} body.fullpage {overflow:hidden;}');
+                body.fullpage .dialog.rounded-container{z-index:6;} body.fullpage #header {z-index: -1;} body.fullpage {overflow:hidden;} \
+                .mgp_playingState .mgp_bigPlay{display:none !important;} #relatedVideosCenter {width: 133%;} #hd-rightColVideoPage {max-height: 850px;overflow-y: auto;} \
+                .fullpage #player {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 9;height: 100% !important;}');
         return {
             videoVolume: 0.2,
             toggleFullPage: function() {
                 $('body').classList.toggle('fullpage', !$('#player').classList.contains('wide'));
-                $('[class$="_cinema"],[class*="_cinema"][class$="_active"]').dispatchEvent(new Event('mouseup'));
+                $('#player').classList.toggle('wide', $('body').classList.contains('fullpage'));
+                if ($('[class$="_cinema"],[class*="_cinema"][class$="_active"]')) {
+                    $('[class$="_cinema"],[class*="_cinema"][class$="_active"]').dispatchEvent(new Event('mouseup'));
+                } else {
+
+                }
+
             },
             toggleFullScreen: function() {
                 $('[class$="_fullscreen"],[class*="_fullscreen"][class$="_active"]').dispatchEvent(new Event('mouseup'));
@@ -651,6 +709,107 @@
                 return '[class$="_videoWrapper"] video';
             }
         };
+    }
+    function hanime() {
+        return {
+            videoVolume: 0.2,
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('button.vjs-icon-square').click();
+                }
+            },
+            toggleFullScreen: function() {
+                $('button.vjs-fullscreen-control').click();
+            },
+            get wheelPanel() {
+                return $('#primary_video');
+            }
+        };
+    }
+    function hanime1() {
+        $All('img').forEach(i=>i.setAttribute("loading", "lazy"));
+        GM_addStyle('body.fullpage .plyr--video {position: fixed;width: 100%;z-index: 99999;top: 0;left: 0;height: 100%;} body.fullpage {overflow:hidden;} \
+            #player-div-wrapper .plyr--hide-controls .plyr__controls {opacity: 1; transform: translateY(calc(100% - 30px));} .plyr__time {margin-left: 0;margin-right: auto;} \
+            #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-track, #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-progress {height: 3px;} \
+            #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-thumb {height: 5px; border-radius: 30%;} \
+            #player-div-wrapper .plyr__controls__item:first-child {margin-right:0;} .plyr__progress__container {position: absolute;width: 100%;top: 18px; right:0;} \
+            #player-div-wrapper .plyr__progress__buffer::-moz-progress-bar {background: aliceblue;} .plyr--hide-controls .plyr__progress__buffer::-moz-progress-bar {height: 3px;margin-top: 1px;}');
+        return {
+            videoVolume: 0.2,
+            init: function() {
+                let pv = $('.plyr--video');
+                if (pv) {
+                    pv.onkeydown = pv.onkeyup = pv.onkeypress = $('body').onkeydown = null;
+                }
+                let sk = $('[id^=plyr-seek-]');
+                let nsk = sk.cloneNode(true);
+                sk.style.display = 'none';
+                sk.parentNode.appendChild(nsk);
+                sk.remove();
+                let bb = $('.plyr__progress__buffer');
+                let nbb = bb.cloneNode(true);
+                bb.style.display = 'none';
+                bb.parentNode.appendChild(nbb);
+                bb.remove();
+                let v = $('video');
+                if (v) {
+                    v.onprogress = function(e) {
+                        let bl = v.buffered;
+                        if (bl.length > 0) {
+                            nbb.value = v.buffered.end(bl.length - 1) * 100 / v.duration;
+                        }
+                    };
+                    nsk.onchange = function(e) {
+                        v.currentTime = nsk.value * v.duration / 100;
+                    };
+                    nsk.onfocus = function(e) {
+                        e.target.blur();
+                        v.focus();
+                    };
+                    v.ontimeupdate = function(e) {
+                        nsk.value = v.currentTime * 100 / v.duration;
+                    };
+                    v.onseeking = function(e) {
+                        nsk.value = v.currentTime * 100 / v.duration;
+                    };
+                }
+            },
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('body').classList.toggle('fullpage');
+                }
+            },
+            toggleFullScreen: function() {
+                $('[data-plyr="fullscreen"]').click();
+            },
+            whenVideoPlaying: function() {
+                if ($('.plyr__poster')) {
+                    $('.plyr__poster').style.display = 'none';
+                }
+            },
+            get wheelPanel() {
+                return $('.plyr--video');
+            }
+        };
+    }
+    function common() {
+        return {
+            videoVolume: 0.2,
+            toggleFullScreen: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('video').requestFullscreen();
+                }
+            },
+            get wheelPanel() {
+                return $('video');
+            }
+        }
     }
     function youtube() {
         GM_addStyle('#player-container-id.fullpage {position: fixed; z-index: 5; width: 100%; top: 0; bottom: 0; background: black; } .dialog-container{z-index: 6 !important;} .fullpage .html5-main-video { width: 100% !important; height: auto !important; } .html5-video-container{height:100%;}');
