@@ -49,7 +49,9 @@
             }
         }
     } else if (loc.match('https://bgm.tv/subject/')) {
-        GM_addStyle('div.title {padding-top: 0;white-space: nowrap;overflow: hidden;} .rateresult .subject-cast,.rateresult .cast {display:none;} #infobox li:nth-child(1) {font-size: 20px;color: chartreuse;font-weight: bold;}');
+        GM_addStyle('div.title {padding-top: 0;white-space: nowrap;overflow: hidden;} .rateresult .subject-cast,.rateresult .cast {display:none;} \
+            #infobox li:nth-child(1) {font-size: 20px;color: chartreuse;font-weight: bold;} #columnSubjectHomeA, #bangumiInfo .infobox, #bangumiInfo .cover {width: 300px;} \
+            .subjectNav .navTabs, .mainWrapper, .columns{width:1080px;}');
         insertPos = $('#panelInterestWrapper .shareBtn');
         oname = $('.nameSingle a').textContent;
         cname = $('.nameSingle a').title;
