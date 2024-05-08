@@ -49,7 +49,7 @@
             }
         }
     } else if (loc.match('https://bgm.tv/subject/')) {
-        GM_addStyle('div.title {padding-top: 0;white-space: nowrap;overflow: hidden;} .rateresult .subject-cast,.rateresult .cast {display:none;} ');
+        GM_addStyle('div.title {padding-top: 0;white-space: nowrap;overflow: hidden;} .rateresult .subject-cast,.rateresult .cast {display:none;} #infobox li:nth-child(1) {font-size: 20px;color: chartreuse;font-weight: bold;}');
         insertPos = $('#panelInterestWrapper .shareBtn');
         oname = $('.nameSingle a').textContent;
         cname = $('.nameSingle a').title;
