@@ -51,14 +51,15 @@
     } else if (loc.match('https://bgm.tv/subject/')) {
         GM_addStyle('div.title {padding-top: 0;white-space: nowrap;overflow: hidden;} .rateresult .subject-cast,.rateresult .cast {display:none;} \
             #infobox li:nth-child(1) {font-size: 20px;color: chartreuse;font-weight: bold;} #columnSubjectHomeA, #bangumiInfo .infobox, #bangumiInfo .cover {width: 300px;} \
-            .subjectNav .navTabs, .mainWrapper, .columns{width:1080px;} .global_score .number{font-size: 32px;}');
+            .subjectNav .navTabs, .mainWrapper, .columns{width:1080px;} .global_score .number{font-size: 32px;} h1.nameSingle::after{content:attr(year);color: chartreuse;}');
         insertPos = $('#panelInterestWrapper .shareBtn');
         oname = $('.nameSingle a').textContent;
         cname = $('.nameSingle a').title;
         var infobox = $All('#infobox li');
         for (let l of infobox) {
-            if (l.textContent.match('放送开始')) {
+            if (l.textContent.match('发售日')) {
                 year = l.textContent.match(/\d{4}/)[0];
+                $('h1.nameSingle').setAttribute('year', `(${year})`);
                 break;
             }
         }
