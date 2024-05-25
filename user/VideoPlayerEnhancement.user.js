@@ -59,7 +59,7 @@
 
     function vpe(configs) {
         GM_addStyle('#vpeInfoPanel {text-align: center;opacity: 0;cursor: default;} \
-            #vpeCenterInfo{white-space: pre-line;position: absolute;left: 50%;top: 50%;transform:translate(-50%, -50%);width: auto;height: 30px;font-weight: 1000;font-size: 24px;-webkit-text-fill-color: #fff;-webkit-text-stroke: 1px #000;font-weight: 1000;z-index: 9999;} \
+            span#vpeCenterInfo{white-space: pre-line;position: absolute;left: 50%;top: 50%;transform:translate(-50%, -50%);width: auto;height: 30px;font-weight: 1000;font-size: 24px;-webkit-text-fill-color: #fff;-webkit-text-stroke: 1px #000;z-index: 9999;font-family: Microsoft Yahei;} \
             #vpeTopInfo {position: absolute;left: 50%;top: 0;font-size: 20px;width: auto;height: 30px;z-index: 9999;color:#db3c8e;text-shadow: black 1px 0px 1px, black 0px 1px 1px, black 0px -1px 1px, black -1px 0px 1px;} \
             .topInfoAnima {animation-name: fastPlay; animation-duration: 1s; animation-iteration-count: infinite;} \
             @keyframes fastPlay { from {opacity: 1;} to {opacity: 0.5;} } \
@@ -254,7 +254,7 @@
                     case 'ControlRight':;
                     case 'ShiftRight':;
                     case 'Period':;
-                    case 'Numpad6': changeVideoRate(playbackRateTemp, true);video.currentTime = video.currentTime;break;
+                    case 'Numpad6': changeVideoRate(playbackRateTemp, true);video.currentTime-=1e-6;break;
                 }
             },true);
 
@@ -623,6 +623,13 @@
     function qqLive() {
         return {
             isLive: true,
+            init: function() {
+                var bn = $('#block');
+                if (bn) {
+                    bn.click();
+                    setTimeout(()=> {$All('div>[type="checkbox"]', bn.parentNode).forEach(i=>i.click());bn.click();}, 1e2);
+                }
+            },
             toggleFullPage: function() {
                 $('[class*="webfull-screen-btn"] input').click();
             },
@@ -689,6 +696,12 @@
                 .fullpage #player {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 9;height: 100% !important;}');
         return {
             videoVolume: 0.2,
+            init: function() {
+                let ls = JSON.parse(localStorage.mgp_player || {});
+                if (ls.cinemaMode) {
+                    $('body').classList.add('fullpage');
+                }
+            },
             toggleFullPage: function() {
                 $('body').classList.toggle('fullpage', !$('#player').classList.contains('wide'));
                 $('#player').classList.toggle('wide', $('body').classList.contains('fullpage'));
@@ -733,7 +746,7 @@
         GM_addStyle('body.fullpage .plyr--video {position: fixed;width: 100%;z-index: 99999;top: 0;left: 0;height: 100%;} body.fullpage {overflow:hidden;} \
             #player-div-wrapper .plyr--hide-controls .plyr__controls {opacity: 1; transform: translateY(calc(100% - 30px));} .plyr__time {margin-left: 0;margin-right: auto;} \
             #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-track, #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-progress {height: 3px;} \
-            #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-thumb {height: 5px; border-radius: 30%;} \
+            #player-div-wrapper .plyr--hide-controls input[type="range"]::-moz-range-thumb {height: 5px; border-radius: 30%;} .plyr__time::after{content:attr(duration);} \
             #player-div-wrapper .plyr__controls__item:first-child {margin-right:0;} .plyr__progress__container {position: absolute;width: 100%;top: 18px; right:0;} \
             #player-div-wrapper .plyr__progress__buffer::-moz-progress-bar {background: aliceblue;} .plyr--hide-controls .plyr__progress__buffer::-moz-progress-bar {height: 3px;margin-top: 1px;}');
         return {
@@ -770,10 +783,20 @@
                     };
                     v.ontimeupdate = function(e) {
                         nsk.value = v.currentTime * 100 / v.duration;
+                        if (v.currentTime < 3 && $('.plyr__time').textContent.match('-')) {
+                            $('.plyr__time').click();
+                        }
                     };
                     v.onseeking = function(e) {
                         nsk.value = v.currentTime * 100 / v.duration;
                     };
+                    if (v.duration) {
+                        $('.plyr__time').setAttribute('duration', ' / ' + formatTime(v.duration));
+                    } else {
+                        v.ondurationchange = e => {
+                            $('.plyr__time').setAttribute('duration', ' / ' + formatTime(v.duration));
+                        };
+                    }
                 }
             },
             toggleFullPage: function() {
