@@ -1,15 +1,14 @@
 // ==UserScript==
 // @name        Video Player Hacker
 // @namespace   Violentmonkey Scripts
-// @include     /https?:\/\/[\w]+\.(mxdm\d\.com|wjys\.cc)\/.*/
-// @match       http://127.0.0.1/*
+// @include     /https?:\/\/[\w]+\.(mxdm\d\.\w+|wjys\.cc)\/.*/
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @grant       unsafeWindow
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.2
+// @version     0.1.3
 // @author      -
 // @description 2024/1/12 18:29:44
 // ==/UserScript==
@@ -29,12 +28,12 @@
     });
 
     //var player_aaaa = {url: '50VtRCxDc%2FV%2F%2BvAa9vlHSEriFbkytw5X4V9aIwgIAR97ShhC5rkb6erJxVYlsJFiZQwWUDxrUVa%2FORFjGzZuQQ%3D%3D'};
-    if (loc.match(/mxdm\d\.com|wjys\.cc/)) {
+    if (loc.match(/mxdm\d\.\w+|wjys\.cc/)) {
         GM_addStyle('#mxoneweek-tabs{z-index:1;} body.play {overflow:auto;} .tips-box,.drop.pc,.video-player-handle-more,.video-info-share{display:none;} \
                 #cbNxtBtn{font-size: 20px; vertical-align: middle; padding: 2px 12px 0 5px;cursor: pointer;color: white;} #header .search-input{color:#e3e6eb !important} \
                 .yzmplayer-played {background: rgb(225, 17, 239)}');
         GM_addStyle('.yzmplayer-controller, .leleplayer-controller {margin-bottom: 2px;opacity: 1 !important;}'); // show process bar
-        if (loc.match(/mxdm\d\.com\/dongmanplay\/|wjys\.cc\/vodplay\//)) {
+        if (loc.match(/mxdm\d\.\w+\/dongmanplay\/|wjys\.cc\/vodplay\//)) {
             var lines = $All('.module-tab-item.tab-item');
             var currLine = loc.match(/\/\d+-(\d+)-\d+\.html/)[1];
             if (lines.length > 0 && lines.length < parseInt(currLine)) {
