@@ -42,7 +42,7 @@ function XHR(req) {
     details.method = method;
     if (req.headers) details.headers = req.headers;
     if (req.data) details.data = req.data;
-    if (rspt) details.responseType = rsp;
+    if (rspt) details.responseType = rspt;
     if (typeof req.timeout == "number" && req.timeout > 0) {
         details.timeout = req.timeout;
     }
