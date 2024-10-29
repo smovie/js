@@ -63,14 +63,15 @@ function XHR(req) {
 function getCookie(key) {
         return document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(key).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1");
 }
-function setCookie(name,value,days) {
+function setCookie(name,value,days,domain) {
     var expires = "";
+    var dm = domain? 'domain=' + domain : '';
     if (days) {
         var date = new Date();
         date.setTime(date.getTime() + (days*24*60*60*1000));
         expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/" + dm;
 }
 //req default value: 
 //{selector: Selector, callback: Callback, waitOnce: true, interval: 300, maxIntervals: MaxIntervals, onlyFirstNdoe: false}
