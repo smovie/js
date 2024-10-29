@@ -65,7 +65,7 @@ function getCookie(key) {
 }
 function setCookie(name,value,days,domain) {
     var expires = "";
-    var dm = domain? ';domain=' + domain : '';
+    var dm = domain? '; domain=' + domain : '';
     if (days) {
         var date = new Date();
         date.setTime(date.getTime() + (days*24*60*60*1000));
