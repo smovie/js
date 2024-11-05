@@ -1,44 +1,24 @@
 // ==UserScript==
 // @name        Price History
 // @namespace   abs
-// @version     1.1.1
+// @version     1.1.2
 // @description 在网上商店产品页面，自动插入价格历史。
-// @include     /^https?:\/\/((n?pc|m)?item(\.m)?|book|mvd)\.jd\.(hk|com)\/.+\.html/
-// @include     /https?:\/\/www\.newegg\.com\.cn\/Product\/.*/
+// @include     /^https?:\/\/((n?pc|m)?item(\.m)?|book|mvd)\.(yiyao)?jd\.(hk|com)\/.+\.html/
 // @include     /https?:\/\/www\.amazon\.cn\/(.+)?(dp\/|gp\/|mn\/detailApp)/
 // @include     /https?:\/\/product\.dangdang\.com\/product\.aspx\?product_id=.*/
 // @include     /^https?:\/\/www\.suning\.com\/emall\/(sngbv|snupgbpv|prd).+\.html.*/
 // @include     /^https?:\/\/product\.suning\.com\/(\d+\/)?\d+\.html.*/
 // @include     http://www.gome.com.cn/ec/homeus/jump/product/*.html*
-// @include     http://www.lusen.com/Product/ProductInfo.aspx?Id=*
-// @include     http://www.efeihu.com/Product/*.html*
-// @include     http://www.tao3c.com/product/*
-// @include     http://www.coo8.com/product/*.html*
 // @include     /^https?:\/\/(www|item)\.yihaodian\.com\/item\/.*/
-// @include     http://www.1mall.com/item/*
-// @include     http://www.ouku.com/goods*
-// @include     http://www.redbaby.com.cn/*/*.html*
-// @include     http://cn.strawberrynet.com/a/b/c/*/
-// @include     http://web1.sasa.com/SasaWeb/sch/product/viewProductDetail.jspa?itemno=*
-// @include     http://www.bookschina.com/*.htm
-// @include     http://www.wl.cn/*
-// @include     http://product.china-pub.com/*
-// @include     http://www.winxuan.com/product/*
-// @include     http://www.99read.com/product/*
-// @include     http://www.new7.com/product/*
-// @include     http://detail.bookuu.com/*.html
 // @include     /^https?:\/\/(s|item)\.taobao\.com\/.*/
 // @include     /^https?:\/\/(chaoshi\.)?detail\.tmall\.com\/item\.htm.*/
-// @include     https://www.gwdang.com/slider/verify.html*
-// @include     https://www.gwdang.com/static_page/captcha/*
-// @include     https://gwdang.com/trend/*
-// @include     https://tool.manmanbuy.com/m/*
 // @run-at      document-start
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       unsafeWindow
+// @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 // ==/UserScript==
 
 
@@ -49,35 +29,9 @@ window.addEventListener("DOMContentLoaded", ()=> {
     var gwdVerifyUrl2 = "https://www.gwdang.com/static_page/captcha/";
     var mmmVerifyUrl = "https://tool.manmanbuy.com/m/ValidateAlibaba.aspx";
     var gwdPUid;
+    var ts = new Date().getTime();
 
-    var url = window.location.href;
-
-    // if (top != self) {
-    //     if (url.match(gwdVerifyUrl2)) {
-    //         GM_setValue("gwdCookieSet", false);
-    //         var gvi2 = setInterval(()=>{
-    //             if (document.querySelector(".verify-tip.success")) {
-    //                 clearInterval(gvi2);
-    //                 GM_setValue("gwdCookieSet", true);
-    //             }
-    //         }, 1000);
-    //         return
-    //     } else if (url.match(gwdVerifyUrl)) {
-    //         GM_setValue("gwdCookieSet", false);
-    //         if(localStorage["gwdang-dfp"] && localStorage["gwdang-fp"]) {
-    //             setCookie("dfp", localStorage["gwdang-dfp"], 9999);
-    //             setCookie("fp", localStorage["gwdang-fp"], 9999);
-    //             GM_setValue("gwdCookieSet", true);
-    //         }
-    //         return;
-    //     } else if (url.match("https://tool.manmanbuy.com/m/disSitePro.aspx")) {
-    //         GM_setValue("mmmCookieSet", true);
-    //         return;
-    //     } else if (url.match(mmmVerifyUrl)) {
-    //         mmmBypassVerify();
-    //         return;
-    //     }
-    // }
+    var loc = window.location.href;
 
     //var gwdApiUrl = "http://gwdang.com/app/price_trend/?callback=&days=&dp_id=" + product_uid + "-3"; // old api not work, '3' is jd, '25' is suning
     //var gwdApiUrl = "https://browser.gwdang.com/extension/price_towards?url=" + encodeURIComponent(location.href); // backup api need verify everyday
@@ -88,42 +42,22 @@ window.addEventListener("DOMContentLoaded", ()=> {
     var gwdApiUrl = "https://www.gwdang.com/trend/data_www?show_prom=true&v=2&get_coupon=1&price=&period=360&dp_id=";
     //var gwdApiUrl = "https://m.gwdang.com/mapp/v3/price_trend?_channel=mapp&app_platform=mapp&dp_id=";
 
-    var mmmApiUrl = "https://tool.manmanbuy.com/m/disSitePro.aspx?c_from=m&url=" + encodeURIComponent(location.href);
+    // from https://greasyfork.org/zh-CN/scripts/472757
+    var gwdApi3 = 'https://browser.gwdang.com/extension/price_towards?ver=1&format=json&version='+ts+'&from_device=default&union=union_gwdang&crc64=1&url=' + encodeURIComponent(loc);
+
+    var mmmApiUrl = "https://tool.manmanbuy.com/m/disSitePro.aspx?c_from=m&url=" + encodeURIComponent(loc.replace(/\&?skuId=\d+/, ''));
     //var mmmApiUrl = "https://bijiatool-v2.manmanbuy.com/ChromeWidgetServices/WidgetServices.ashx?methodName=getZhekou&ipagesize=1&ipage=1&zkOrderby=price&p_url=" + encodeURIComponent(location.href) + "&_=" + Date.now();
-    var mmmApiUrl2;     // https://tool.manmanbuy.com/history.aspx?action=gethistory&url=&token=
+    //var mmmApiUrl2;     // https://tool.manmanbuy.com/history.aspx?action=gethistory&url=&token=
+    var mmmApiUrl2 = "https://bijiatool-v2.manmanbuy.com/ChromeWidgetServices/WidgetServices.ashx?methodName=getBiJiaInfo&jsoncallback=&p_url=" + loc;
 
-    if (url.match('https://gwdang.com/trend/')) {
-        var tn = $('.search_colum a');
-        if (a && a.href == url) {
-            location.reload();
-            return;
-        }
+    //from https://greasyfork.org/zh-CN/scripts/418355
+    var ssApiUrl = 'https://api.shop.xuelg.com/lsjg/?jdurl=' + location.href.replace(/\?.+/, '');
+
+    if (loc.match('gwdang.com')) {
+
     }
-//     if (url.includes(gwdVerifyUrl2)) {
 
-//         var timer = setInterval(() => {
-//             var vf = document.querySelector('.slider_tab.enabled');
-//             if (vf && vf.textContent) {
-//                 clearInterval(timer);
-//                 vf.click();
-//                 var page = document.querySelector(".page.yahei");
-//                 var slide = document.querySelector(".slider_div");
-//                 if (page && slide) {
-//                     page.replaceWith(slide);
-//                 }
-//             }
-//         }, 1000);
-//         if (top != self) {
-//             window.onbeforeunload = () => {
-//                 var pUrl = location.href.match(/fromUrl=(.+)/);
-//                 if (pUrl) {
-//                     //window.parent.location = decodeURIComponent(pUrl[1]); // may cause problem
-//                 }
-//             };
-//         }
-//         return;
-//     }
-//
+
     // 图书类还是 Google Chart
     function google_chart(response) {
         var temp_document, img_node, img_node_src, image_node;
@@ -158,6 +92,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
         var detail_url = urls[0];
         var chart_url = urls[1];
         var img = document.createElement('img');
+        img_node.id = 'priceHistoryBox';
         img.src = chart_url;
         img.width = 630;
         img.setAttribute('height', 'auto');
@@ -170,13 +105,13 @@ window.addEventListener("DOMContentLoaded", ()=> {
         // img_node.onload = function(e) { if (urls.length > 2) useGwdData(this, urls[2], e.type);}
         // setTimeout(function(){if(!img_node.complete && urls.length> 2) useGwdData(img_node, urls[2], "timeout");}, 2000);
         if (urls[2]) useGwdData(img_node, urls[2], 'load');
-        useMmmData(img_node, mmmApiUrl, 'load');
+        useMmmData(img_node, mmmApiUrl2, 'load');
         // 加上链接
         var link = document.createElement('a');
         link.href = detail_url;
         link.target = "_blank";
         link.appendChild(img);
-        img_node.appendChild(link);
+        //img_node.appendChild(link);
         return img_node;
     }
 
@@ -196,14 +131,16 @@ window.addEventListener("DOMContentLoaded", ()=> {
         var detail_url = 'http://www.boxz.com/products/' + prefix + '-' + product_uid + '.shtml';
         var chart_url = 'http://www.boxz.com/pic/small/' + prefix + '-' + product_uid + '.png';
         var gwd_url, gwd_url2 = '';
-        gwdPUid = product_uid + "-3";
         if (prefix == '360buy') {
+            gwdPUid = product_uid + "-3";
             gwd_url = gwdApiUrl + gwdPUid;
             gwd_url2 = gwdApiUrl2 + gwdPUid;
         } else {
-            gwd_url = "https://browser.gwdang.com/brwext/dp_query?url=" + encodeURIComponent(location.href) + "&crc64=1&_=" + Date.now();
+            gwdPUid = product_uid;
+            gwd_url = "https://browser.gwdang.com/brwext/dp_query?url=" + encodeURIComponent(location.href) + "&crc64=1&_=" + Date.now(); // not precision
         }
         console.log(gwd_url, gwd_url2);
+        console.log(gwdApi3);
         return [detail_url, chart_url, gwd_url];
     }
 
@@ -224,8 +161,8 @@ window.addEventListener("DOMContentLoaded", ()=> {
 
     function setMMMApiUrl(pid) {
         //var pUrl, token;
-        //if (url.match(/jd\.(com|hk)/)) {
-        //    pUrl = url.match(/[^\?]+/)[0]; //`https://item.jd.com/${pid}.html`;
+        //if (loc.match(/jd\.(com|hk)/)) {
+        //    pUrl = loc.match(/[^\?]+/)[0]; //`https://item.jd.com/${pid}.html`;
         //    token = d.encrypt(pUrl, 2, true);
         //}
         //mmmApiUrl2 = `http://tool.manmanbuy.com/history.aspx?action=gethitory&url=${encodeURIComponent(pUrl)}&token=${token}`;
@@ -236,16 +173,16 @@ window.addEventListener("DOMContentLoaded", ()=> {
         domain : 'jd.com',
         get_history_url: function() {
             var reg, product_uid, history_url;
-            if (url.match(/^https?:\/\/(n?pc)?item(\.m)?\.jd\.com/)) {
+            if (loc.match(/^https?:\/\/(n?pc)?item(\.m)?\.(yiyao)?jd\.com/)) {
                 reg = new RegExp('/(\\d+)\.html');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_product_history_url('360buy', product_uid);
             } else {
                 reg = new RegExp('https?://.+\.jd\.com/(\\d+).html');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_book_history_url('360buy', product_uid);
             }
-            if (url.match(/\.m\.jd\./)) {
+            if (loc.match(/\.m\.jd\./)) {
                 GM_addStyle('.item_floor {padding:0;} #imk2FixedBottom{display:none;}');
             }
             // setMMMApiUrl(product_uid);
@@ -261,13 +198,13 @@ window.addEventListener("DOMContentLoaded", ()=> {
         domain : 'jd.hk',
         get_history_url: function() {
             var reg, product_uid, history_url;
-            if (url.match(/^https?:\/\/(n?pc|m)?item\.jd\.hk/)) {
+            if (loc.match(/^https?:\/\/(n?pc|m)?item\.jd\.hk/)) {
                 reg = new RegExp('(\\d+)\.html');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_product_history_url('360buy', product_uid);
             } else {
                 reg = new RegExp('https?://.+\.jd\.hk/(\\d+)\.html');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_book_history_url('360buy', product_uid);
             }
             //setMMMApiUrl(product_uid);
@@ -283,50 +220,31 @@ window.addEventListener("DOMContentLoaded", ()=> {
         domain : 'tmall.com',
         get_history_url: function() {
             var reg, product_uid, history_url;
-            if (url.match(/^https?:\/\/(chaoshi\.)?detail\.tmall\.com\/item\.htm.*/)) {
+            if (loc.match(/^https?:\/\/(chaoshi\.)?detail\.tmall\.com\/item\.htm.*/)) {
                 reg = new RegExp('id=(\\d+)');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_product_history_url('tmall', product_uid);
             }
             return history_url;
         },
         request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.tb-skin');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
+            var image_node = create_history_image_node(response);
+            waitForElements({selector: '.tb-skin, [class^="PurchasePanel-"], [class*=BasicContent--actions-]', callback: n=>n.parentNode.insertBefore(image_node, n.nextElementSibling)});
         }
     }, {
         domain : 'taobao.com',
         get_history_url: function() {
             var reg, product_uid, history_url;
-            if (url.match(/^https?:\/\/item\.taobao\.com\/item\.htm.*/)) {
+            if (loc.match(/^https?:\/\/item\.taobao\.com\/item\.htm.*/)) {
                 reg = new RegExp('id=(\\d+)');
-                product_uid = url.match(reg)[1];
+                product_uid = loc.match(reg)[1];
                 history_url = create_product_history_url('tmall', product_uid);
             }
             return history_url;
         },
         request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.tb-skin');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    },{
-        domain : 'newegg.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.newegg.com.cn/[Pp]roduct/([^.]+).htm');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('newegg', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.mainInfoArea');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
+            var image_node = create_history_image_node(response);
+            waitForElements({selector: '.tb-skin, [class^="PurchasePanel-"]', callback: n=>n.parentNode.insertBefore(image_node, n.nextElementSibling)});
         }
     }, {
         domain : 'amazon.cn',
@@ -336,14 +254,14 @@ window.addEventListener("DOMContentLoaded", ()=> {
             if (asin && asin.value) {
                 product_uid = asin.value.toLowerCase();
             } else {
-                if (url.indexOf('/gp/product/') !== -1) {
+                if (loc.indexOf('/gp/product/') !== -1) {
                     reg = new RegExp('https?://www.amazon.cn/gp/product/([^/]+)/\?');
                 } else if (url.indexOf('/dp/') !== -1) {
                     reg = new RegExp('https?://www.amazon.cn/[^/]*/\?dp/([^/]+)/\?');
                 } else {
                     reg = new RegExp('https?://www.amazon.cn/mn/detailApp.*asin=(\\w+)');
                 }
-                product_uid = url.match(reg)[1].toLowerCase();
+                product_uid = loc.match(reg)[1].toLowerCase();
             }
             var category = document.querySelector('.nav-a-content');
             if (category && category.textContent.trim() === '图书') {
@@ -364,7 +282,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
         get_history_url: function() {
             var reg, category, product_uid, history_url;
             reg = new RegExp('http://product.dangdang.com/[pP]roduct.aspx\\?product_id=(\\d+)');
-            product_uid = url.match(reg)[1];
+            product_uid = loc.match(reg)[1];
             category = document.querySelector('.nav_top li.on a').textContent;
             if (category === '图书' || category === '音像') {
                 history_url = create_book_history_url('dangdang', product_uid);
@@ -380,28 +298,13 @@ window.addEventListener("DOMContentLoaded", ()=> {
             place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
         }
     }, {
-        domain : 'yixun.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://item.yixun.com/item-([^.]+).html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('icson', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.xbase_row3');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
         domain : 'suning.com',
         get_history_url: function() {
             var reg, mess, product_uid, history_url;
             // 真恶心的url设计
             reg = new RegExp('https?://www.suning.com/emall/(.+?).html');
-            if (url.match(reg)) {
-                mess = url.match(reg)[1].split('_');
+            if (loc.match(reg)) {
+                mess = loc.match(reg)[1].split('_');
                 if (mess[0] === 'prd') {
                     product_uid = mess[4];
                 }
@@ -410,7 +313,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
                 }
             } else {
                 reg = new RegExp('https?://.+\.suning\.com/(\\d+/)?(\\d+).html');
-                product_uid = url.match(reg)[2];
+                product_uid = loc.match(reg)[2];
             }
             history_url = create_product_history_url('suning', product_uid);
             return history_url;
@@ -437,66 +340,6 @@ window.addEventListener("DOMContentLoaded", ()=> {
             place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
         }
     }, {
-        domain : 'lusen.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.lusen.com/Product/ProductInfo.aspx\\?Id=(\\d+)');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('lusen', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.goodsBox .right');
-            insertAfter(image_node, place_node);
-        }
-    }, {
-        domain : 'efeihu.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.efeihu.com/Product/(\\d+?)\.html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('efeihu', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.vi_choose');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'tao3c.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.tao3c.com/product/(\\d+).html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('tao3c', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.detail_info_rm3');
-            insertAfter(image_node, place_node);
-        }
-    }, {
-        domain : 'coo8.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.coo8.com/product/(\\d\+)\.html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('coo8', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('ul[class="c8-ulbox"]');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
         domain : 'yihaodian.com',
         get_history_url: function() {
             var product_uid, history_url;
@@ -508,186 +351,6 @@ window.addEventListener("DOMContentLoaded", ()=> {
             var image_node, place_node;
             image_node = create_history_image_node(response);
             place_node = document.querySelector('.produce');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        // 又是照抄上面
-        domain : '1mall.com',
-        get_history_url: function() {
-            var product_uid, history_url;
-            product_uid = document.querySelector('#mainProductId').value;
-            history_url = create_product_history_url('yihaodian', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.produce');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'ouku.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.ouku.com/goods(\\d+)');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('ouku', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.celldetail_contright_xinde1');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'redbaby.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.redbaby.com.cn/\\w\+/\\d\{7}(\\d+?)\.html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('redbaby', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.productRightBase');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'cn.strawberrynet.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://cn.strawberrynet.com/a/b/c/(\\d+?)/');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('strawberry', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.white_bg.product .fright');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'sasa.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://web1.sasa.com/SasaWeb/sch/product/viewProductDetail.jspa\\?itemno=(\\d+)');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('sasa', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('table[itemtype]');
-            insertAfter(image_node, place_node);
-        }
-    }, {
-        domain : 'bookschina.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.bookschina.com/(\\d+).htm');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('bookschina', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelectorAll('.float98')[1];
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'wl.cn',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.wl.cn/(\\d+)/?');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('wl', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.pro.layout.blankbtm');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'china-pub.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://product.china-pub.com/(\\d+)');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('chinapub', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.buybook');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'winxuan.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.winxuan.com/product/(\\d+)');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('wenxuan', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.goods_info');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : '99read.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.99read.com/[pP]roduct/(\\d+).aspx');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('99read', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelectorAll('.NeiRongA-box')[1];
-            place_node.parentNode.insertBefore(image_node, place_node.previousElementSibling);
-        }
-    }, {
-        domain : 'new7.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://www.new7.com/product/(\\d+).html');
-            product_uid = url.match(reg)[1];
-            history_url = create_product_history_url('all3c', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('.buy');
-            place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
-        }
-    }, {
-        domain : 'bookuu.com',
-        get_history_url: function() {
-            var reg, product_uid, history_url;
-            reg = new RegExp('http://detail.bookuu.com/(\\d\+)\.html');
-            product_uid = url.match(reg)[1];
-            history_url = create_book_history_url('bookuu', product_uid);
-            return history_url;
-        },
-        request_callback: function(response) {
-            var image_node, place_node;
-            image_node = create_history_image_node(response);
-            place_node = document.querySelector('#rightcontent .desc');
             place_node.parentNode.insertBefore(image_node, place_node.nextElementSibling);
         }
     }];
@@ -711,7 +374,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
     /* 开始处理 */
     var i, site;
     for (i = 0; i < sites.length; i += 1) {
-        if (url.indexOf(sites[i].domain) !== -1) {
+        if (loc.indexOf(sites[i].domain) !== -1) {
             site = sites[i];
             break;
         }
@@ -728,73 +391,123 @@ window.addEventListener("DOMContentLoaded", ()=> {
     }
 
     function useMmmData(imgNode, url, type) {
-        //console.log("mmmApiUrl:", url);
-        var dt, cp, ttl, mmmVerify = false;
+        console.log("mmmApiUrl:", url);
+        var minGetDate='', minGetPrice='', minShowDate='', minShowPrice='', ttl='', mmmVerify = false, sLow='';
         var mmmUA = "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36";
         var isJson = true;
-        if (url.match("/m/disSitePro.aspx")) {
-            isJson = false;
-        }
-
-        XHR({url:url, isjson: isJson, headers: {"User-Agent": mmmUA, Referer: 'https://tool.manmanbuy.com'}}).then(r=> {
-            if (isJson) {
-                if (r.ok == 1 && r.zklist && r.zklist.length > 0) {
-                    var d = r.zklist[0];
-                    dt = new Date(Number(d.dt.match(/\d+/)[0])).toLocaleDateString('zh-CN');
-                    cp = d.currentprice;
-                    ttl = (d.TJYY? d.TJYY : '') + (d.spprice? d.spprice : '');
-                } else if (r.datePrice) {
-                    dt = eval("new " + r.lowerDate.replaceAll("/", "")).toLocaleDateString('zh-CN');
-                    cp = r.lowerPrice;
-                }
-            } else {
-                var mmdata = r.match(/<script type=\"text\/javascript\">\s+\$\(document\)\.ready\(function[^\[]+(\[.+\])\'/);
-                if (mmdata) {
-                    var mmArr = JSON.parse('['+mmdata[1]+']');
-                    var mds = mmArr.sort((a,b)=>a[1]>b[1]);
-                    var md = mds[0];
-                    dt = new Date(md[0]).toLocaleDateString('zh-CN');
-                    cp = md[1];
-                    ttl = md[2];
-                } else {
-                    mmmVerify = true;
-                }
-            }
-
+        var isFinalUrl = false;
+        var errmsg = '';
+        var setHistoryPrice = () => {
             var c = document.createElement("canvas");
             c.width = 630;
             c.height = 25;
             var ctx = c.getContext('2d');
             ctx.font = "16px 微软雅黑";
-            var tt = `慢慢买最低价格日期:${dt}，最低价格:`;
-            ctx.fillText(tt, 10, 20);
-            if (cp) {
+            if (minGetDate) {
+                var tt = '慢慢买：';
+                if (minShowDate && minShowPrice) {
+                    tt += `最低标价￥${minShowPrice}，`;
+                    ttl += `最低标价日期${minShowDate}，`;
+                }
+                tt += `折后最低价`;
+                ttl += `折后最低日期${minGetDate}`;
+                ttl += sLow;
+                ctx.fillText(tt, 10, 20);
+            }
+            if (minGetPrice) {
                 var w = ctx.measureText(tt).width;
                 ctx.fillStyle = 'red';
-                ctx.fillText(`￥${cp}`, 10 + w, 20);
+                ctx.fillText(`￥${minGetPrice}`, 10 + w, 20);
+            }
+            if (errmsg) {
+                ctx.fillText(errmsg, 10, 20);
             }
             if (mmmVerify) {
-                var f = document.createElement("iframe");
-                f.src = mmmVerifyUrl;
-                f.style = 'width:1px; height:1px;visibility: hidden;';
-                var fi = setInterval(()=> {
-                    if (GM_getValue("mmmCookieSet")) {
-                        GM_setValue("mmmCookieSet", false);
-                        clearInterval(fi);
-                        f.remove();
-                        useMmmData(imgNode, url, type)
+                var mmmBtn = document.createElement('a');
+                mmmBtn.id = 'mmmBtn';
+                var btn = $C('button');
+                btn.textContent = '慢慢买需要验证';
+                mmmBtn.appendChild(btn);
+                mmmBtn.href = url;
+                mmmBtn.target = '_blank';
+                imgNode.appendChild(mmmBtn);
+                btn.onclick = e => {
+                    if (btn.textContent == '重新加载慢慢买') {
+                        e.preventDefault();
+                        mmmBtn.remove();
+                        useMmmData(imgNode, url, type);
+                    } else {
+                        btn.textContent = '重新加载慢慢买';
                     }
-                }, 1000);
-                imgNode.parentNode.insertBefore(f, imgNode);
-                tt = '慢慢买需要验证！';
+                }
             } else {
                 var a = document.createElement("a");
                 c.title = ttl;
                 a.appendChild(c);
-                a.href = 'https://tool.manmanbuy.com/HistoryLowest.aspx?url=' + encodeURIComponent(location.href);
+                a.href = url; //'https://tool.manmanbuy.com/HistoryLowest.aspx?url=' + encodeURIComponent(location.href);
                 a.target = "_blank";
-                imgNode.parentNode.insertBefore(a, imgNode);
+                //imgNode.parentNode.insertBefore(a, imgNode);
+                imgNode.appendChild(a);
             }
+        };
+        if (url.match("/m/disSitePro.aspx")) {
+            isJson = false;
+            isFinalUrl = true;
+        }
+        XHR({url:url, isjson: isJson, finalUrl: isFinalUrl, headers: {"User-Agent": mmmUA, Referer: 'https://tool.manmanbuy.com'}}).then(r=> {
+            if (isJson) {
+                if (r.ok == 1 && r.zklist && r.zklist.length > 0) {
+                    var d = r.zklist[0];
+                    minGetDate = new Date(Number(d.dt.match(/\d+/)[0])).toLocaleDateString('zh-CN');
+                    minGetPrice = d.currentprice;
+                    ttl = (d.TJYY? d.TJYY : '') + (d.spprice? d.spprice : '');
+                    setHistoryPrice();
+                } else if (r.datePrice) {
+                    minGetDate = eval("new " + r.lowerDate.replaceAll("/", "")).toLocaleDateString('zh-CN');
+                    minGetPrice = r.lowerPrice;
+                    setHistoryPrice();
+                } else if (r.lowerPrice && r.lowerPriceyh) {
+                    minGetPrice = r.lowerPriceyh;
+                    minShowPrice = r.lowerPrice;
+                    minGetDate = eval("new " + r.lowerDateyh.replaceAll("/", "")).toLocaleDateString('zh-CN');
+                    minShowDate = eval("new " + r.lowerDate.replaceAll("/", "")).toLocaleDateString('zh-CN');
+                    if (r.jiagequshiyh) {
+                        var yh = eval(`[${r.jiagequshiyh}]`).sort((a,b)=>a[1]>b[1]);
+                        for (let i of yh) {
+                            if (i[1] > minGetPrice) {
+                                sLow = `，第二低价:￥${i[1]}, 日期:${new Date(i[0]).toLocaleDateString('zh-CN')}`;
+                                break;
+                            }
+                        }
+                    }
+                    setHistoryPrice();
+                } else if (url == mmmApiUrl2) {
+                    useMmmData(imgNode, mmmApiUrl, type);
+                }
+            } else if(r.match("https://tool.manmanbuy.com/m/ValidateAlibaba.aspx")) {
+                mmmVerify = true;
+                setHistoryPrice();
+            } else {
+                var tokens = r.replace(/^.+\?/, '').split('&');
+                var fd = new FormData();
+                tokens.forEach(t => {
+                    var kv = t.split('=');
+                    fd.append(kv[0], decodeURIComponent(kv[1]));
+                });
+                XHR({url:'https://apapia-history-weblogic.manmanbuy.com/h5/share/trendData', method:'POST', data: fd, isjson:true}).then(j=>{
+                    if (j.ok == 1 && j.result) {
+                        minGetPrice = j.result.priceRemark.lowestPrice;
+                        minGetDate = j.result.priceRemark.lowestDate.split(' ')[0];
+                    } else if (j.ok == 0 && j.code == 6001) {
+                        errmsg = j.msg;
+                    } else {
+                        mmmVerify = true;
+                    }
+                    setHistoryPrice();
+                });
+            }
+
+
         });
     }
 
@@ -809,10 +522,14 @@ window.addEventListener("DOMContentLoaded", ()=> {
 
         var a = document.createElement("a");
         var img = document.createElement("img");
-        var minPriceStr = "购物党一年内最低标价:￥", minPriceDateStr = "最低标价日期:";
-        var minGetPriceStr = "，折后最低价:", minGetPriceDateStr = "，折后最低价日期:", mgp;
-        var gwdPage = "https://www.gwdang.com/trend?url="  + encodeURIComponent(location.href);
-        var gvurl = 'https://www.gwdang.com/trend/' + gwdPUid + '.html?static=true&time=' + Math.floor(Date.now()/1000);
+        var minPriceStr = "购物党：最低标价￥", minPriceDateStr = "最低标价日期:";
+        var minGetPriceStr = "，折后最低价", minGetPriceDateStr = "。折后最低价日期:", mgp;
+        var gwdPage = "https://www.gwdang.com/trend?url=" + encodeURIComponent(location.href);
+        var gvurl = `https://gwdang.com/v2/trend/${gwdPUid}.html?static=true&time=${ts}`;
+        var gwdVerify = false;
+        var gwdVerifyUrl = "https://www.gwdang.com/slider/verify.html?fromUrl=" + encodeURIComponent(location.href);
+
+        //var gvurl = 'https://www.gwdang.com/trend/' + gwdPUid + '.html?static=true&time=' + Math.floor(Date.now()/1000);
         var setPrice = obj => {
             var tt, dateFrom, minPrice, minGetPrice, tt2, minST, minPST, vfUrl;
             if (obj.is_ban == 1 || (obj.series && obj.series[0].min == 91100)) {
@@ -820,29 +537,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
                     return;
                 }
                 tt = "购物党需要验证，正在进行验证！";
-
-                var f = document.createElement('iframe');
-                f.style = 'width:320px; height:256px;';
-                f.src = a.href;
-                // f.style = 'width:1px; height:1px;visibility: hidden;';
-                f.onload = ()=> {
-                    setTimeout(()=>{
-                        f.remove();
-                        // a.remove();
-                        useGwdData(imgNode, url, 'banRetry');
-                    }, 2e3);
-                    // var ci = setInterval(()=>{
-                    //     if (GM_getValue("gwdCookieSet")) {
-                    //         clearInterval(ci);
-                    //         GM_setValue("gwdCookieSet", false);
-                    //         f.remove();
-                    //         a.remove();
-                    //         useGwdData(imgNode, url, type);
-                    //     }
-                    // }, 1000);
-                };
-                //imgNode.parentNode.insertBefore(f, imgNode);
-
+                gwdVerify = true;
 
             } else if (url.match(/browser\.gwdang\.com\/extension\/price_towards/)) {
                 dateFrom = new Date(obj.store[0].all_line_begin_time).toISOString().split("T")[0];
@@ -851,7 +546,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
                 //tt = dateFrom + minPriceStr + minPrice + minGetPriceStr + minGetPrice;
                 tt = minPriceStr + minPrice + minGetPriceStr;
                 mgp = minGetPrice;
-            } else if (url.match(/gwdang\.com\/trend\/data_www|m\.gwdang\.com\/mapp/) && obj.series[0]) {
+            } else if (url.match(/gwdang\.com\/trend\/data_www|m\.gwdang\.com\/mapp/) && obj.series && obj.series[0]) {
                 dateFrom = new Date(obj.series[0].data[0].x*1000).toISOString().split("T")[0];
                 minPrice = obj.series[0].min / 100.0;
                 minGetPrice = (obj.promo_series)? obj.promo_series[0].min / 100.0 : minPrice;
@@ -892,8 +587,34 @@ window.addEventListener("DOMContentLoaded", ()=> {
                     tt2 += minGetPriceDateStr + minPST + (minP? "，标价：" + (minP.ori_price / 100) + '，' : '') + minT.join('，');
                 }
                 //tt = dateFrom + minPriceStr + minPrice + minGetPriceStr + minGetPrice;
+            } else if(gwdApi3) {
+                var lowest = parseFloat(obj.store[0].lowest);
+                var allPromo = (obj.promo || []).concat(obj.nopuzzle_promo || []).sort((a,b)=>a.ori_price > b.ori_price);
+                if (allPromo.length > 0) {
+                    var minBP = allPromo[0];
+                    var minP2 = 0;
+                    for (let i of allPromo) {
+                        if (i.price > minBP.price) {
+                            minP2 = i.price / 100;
+                            break;
+                        }
+                    }
+                    minGetPrice = minBP.ori_price / 100;
+                    minST = new Date(minBP.time*1e3).toLocaleDateString("zh-CN");
+                    minP = allPromo.sort((a,b)=>a.price > b.price)[0];
+                    mgp = minP.price / 100;
+                    mgp = (lowest < mgp)? lowest : mgp;
+                    minPST = new Date(minP.time*1e3).toLocaleDateString("zh-CN");
+                    tt = minPriceStr + minGetPrice + minGetPriceStr;
+                    tt2 = minPriceDateStr + minST + minGetPriceDateStr + minPST + (minP? "，标价：" + (minP.ori_price / 100) + '，' : '') + [(minP.msg.promotion||''),(minP.msg.coupon||'')].join(' ') + "；第二低价为￥" + minP2;
+                } else if (obj.store) {
+                    var lowestData = new Date(obj.store[0].lowest_date*1e3).toLocaleDateString("zh-CN");
+                    mgp = obj.store[0].lowest;
+                    tt = '购物党最低价格日期：' + lowestData + '，最低价格：';
+                    tt2 = '';
+                }
             } else {
-                tt = '抱歉，该商品暂无比价结果~';
+                tt = '抱歉，购物党暂无比价结果~';
             }
             var c = document.createElement("canvas");
             c.width = 630;
@@ -921,26 +642,67 @@ window.addEventListener("DOMContentLoaded", ()=> {
             a.appendChild(img);
             a.href = (obj.is_ban == 1)? a.href : gvurl;
             a.target = "_blank";
-            imgNode.parentNode.insertBefore(a, imgNode);
+            if (gwdVerify) {
+                var gwdBtn = document.createElement('a');
+                gwdBtn.id = 'gwdBtn';
+                var btn = $C('button');
+                btn.textContent = '购物党需要验证';
+                gwdBtn.appendChild(btn);
+                gwdBtn.href = gwdVerifyUrl;
+                gwdBtn.target = '_blank';
+                imgNode.appendChild(gwdBtn);
+                btn.onclick = e => {
+                    if (btn.textContent == '重新加载购物党') {
+                        e.preventDefault();
+                        gwdBtn.remove();
+                        useGwdData(imgNode, url, type);
+                    } else {
+                        btn.textContent = '重新加载购物党';
+                    }
+                }
+            } else {
+                imgNode.appendChild(a);
+            }
+            // if (location.href.match('jd.com')) {
+            //     GM_xmlhttpRequest({method:'GET', url: ssApiUrl, onload: function(r) {
+            //         var rTxt = r.responseText;
+            //         if (rTxt) {
+            //             var json = JSON.parse(rTxt);
+            //             var zdj = json['zuidijia'];
+            //             var ssa = document.createElement('div');
+            //             ssa.style.fontSize = '16px';
+            //             ssa.innerHTML = '超简比价:' + zdj;
+            //             imgNode.appendChild(ssa);
+            //         }
+            //     }});
+            // }
         };
         //console.log(url);
         var banRetry = false;
         var fp = randomString(32);
         var dfp = randomString(60);
-        var getPrice = () => {
-            var hd = {Referer: 'https://www.gwdang.com/', 'Cookie': `fp=${fp};dfp=${dfp};`, Accept: 'application/json, text/javascript, */*', Pragma: 'no-cache', 'Cache-Control': 'no-cache', 'authority':'www.gwdang.com'};
+        var getPrice = (aUrl, headers) => {
+            var hd = headers || {Referer: 'https://www.gwdang.com/',  Accept: 'application/json, text/javascript, */*', Pragma: 'no-cache', 'Cache-Control': 'no-cache', 'authority':'www.gwdang.com'};
             GM_xmlhttpRequest({
                 method: 'GET',
                 headers: hd,
-                url: url,
+                url: aUrl,
                 // timeout: 5000,
                 onload: function(resp) {
-                    var obj = JSON.parse(resp.responseText.replace(/^\(|\)$/g, ""));//alert(obj.dp_id)
+                    var rspTxt = resp.responseText;
+                    var obj = {};
+                    //console.log(rspTxt)
+                    if (rspTxt && !rspTxt.match(/请勿频繁访问/)) {
+                        obj = JSON.parse(rspTxt.replace(/^\(|\)$/g, ""));//alert(obj.dp_id)
+                    } else {
+                        obj.is_ban = 1;
+                        banRetry = true;
+                    }
                     if (obj.is_ban == 1 && banRetry == false) {
                         banRetry = true;
                         // var gvurl = 'https://www.gwdang.com/trend/' + gwdPUid + '.html?static=true&time=' + Math.floor(Date.now()/1000);
                         console.log('gvurl:', gvurl);
-                        a.href = gvurl;
+                        a.href = gwdVerifyUrl;
                         // XHR({url:gvurl, header:hd}).then(r=>{
                         //     getPrice();
                         // });
@@ -959,7 +721,27 @@ window.addEventListener("DOMContentLoaded", ()=> {
             });
         };
 
-        getPrice();
+        if (!gwdApi3) {
+            GM_xmlhttpRequest({
+                url: "https://browser.gwdang.com/brwext/permanent_id?version=2&default_style=bottom&referrer=",
+                method: "HEAD",
+                onload: function(r) {
+                    var ck = r.responseHeaders.match(/set-cookie:(.+\n)+/g)[0].replace(/Max-Age.+None;\n|set-cookie: /g, '').trim();
+                    getPrice(gwdApi3, {cookie: ck});
+//                     GM_xmlhttpRequest({
+//                         url: gwdApi3,
+//                         method: "GET",
+//                         headers: {cookie: ck},
+//                         onload: function(res) {
+//                             var json = JSON.parse(res.responseText);
+
+//                         }
+//                     });
+                }
+            });
+        } else {
+            getPrice(url);
+        }
 
     }
 
@@ -1017,39 +799,5 @@ window.addEventListener("DOMContentLoaded", ()=> {
                 }, 30);
             }
         }, 500);
-    }
-
-    function getCookie(key) {
-        return document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(key).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1");
-    }
-    function setCookie(name,value,days) {
-        var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days*24*60*60*1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-    }
-
-    function XHR(req) {
-        var details = {};
-        var method = (req.finalUrl)? "HEAD" : req.method || "GET";
-        var isjson = req.isjson || false;
-        var rspt = req.responseType;
-        details.url = req.url;
-        details.method = method;
-        if (req.headers) details.headers = req.headers;
-        if (req.data) details.data = req.data;
-        if (rspt) details.responseType = rspt;
-        if (req.synchronous === true) details.synchronous = true;
-
-        return new Promise((resolve, reject) => {
-            details.onload = e =>{
-                try {resolve((method=='HEAD')? ((req.finalUrl)? e.finalUrl : e.responseHeaders) : ((isjson)? JSON.parse(e.responseText) : ((rspt)? e.response : e.responseText)))}
-                catch(e){ reject('XHR error'); }
-            };
-            GM_xmlhttpRequest(details);
-        });
     }
 });
