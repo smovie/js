@@ -18,6 +18,7 @@
 // @require     https://raw.githubusercontent.com/smovie/js/refs/heads/main/util.js
 // @grant       unsafeWindow
 // @grant       GM_addStyle
+// @grant       GM_setClipboard
 // ==/UserScript==
 
 //https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
@@ -605,13 +606,15 @@
             updateVolumeBar: function() {
                 if ($('.leleplayer-volume-bar-inner')) {
                     $('.leleplayer-volume-bar-inner').style.width = Math.round(video.volume * 100) + '%';
+                } else if ($('.dplayer-volume-bar-inner')) {
+                    $('.dplayer-volume-bar-inner').style.width = Math.round(video.volume * 100) + '%';
                 }
             },
             get wheelPanel() {
                 return $('#player, video');
             },
             get infoPanel() {
-                return $('#player, video') || $('video').parentNode;
+                return $('#player') || $('video').parentNode;
             },
             get title() {
                 return $('h1.page-title').textContent + (($('.episode'))? ' ' + $('.episode').textContent : '');
@@ -862,12 +865,12 @@
                 bb.remove();
                 let v = $('video');
                 if (v) {
-                    v.onprogress = function(e) {
+                    setInterval(()=> {
                         let bl = v.buffered;
-                        if (bl.length > 0) {
+                        if (bl && bl.length > 0) {
                             nbb.value = v.buffered.end(bl.length - 1) * 100 / v.duration;
                         }
-                    };
+                    }, 2e3);
                     nsk.onchange = function(e) {
                         v.currentTime = nsk.value * v.duration / 100;
                     };
@@ -891,6 +894,24 @@
                     //         $('.plyr__time').setAttribute('duration', ' / ' + formatTime(v.duration));
                     //     };
                     // }
+                }
+                var dBtn = $('#downloadBtn');
+                if (dBtn) {
+                    GM_addStyle('#downloadBtn {left:0; position: relative;   display: inline-block;   border-bottom: 1px dotted black; } #downloadBtn .downDetail \
+                        {   visibility: hidden;   width: 120px;   background-color: black;   color: #fff;   text-align: center;   border-radius: 6px;   \
+                        padding: 5px 0;   position: absolute;   z-index: 1;   top: 100%;   left: 50%;   margin-left: -60px; }  #downloadBtn:hover .downDetail \
+                        {   visibility: visible; } .video-buttons-wrapper {overflow-y: unset !important;}');
+                    dBtn.appendChild($C('div', {class: 'downDetail', title:'点击复制链接'}));
+                    $All('#player source').forEach(s => {
+                        var c = $C('div');
+                        var a = $C('a', {href: s.src, target:'_blank', text: s.getAttribute('size')});
+                        a.onclick = e => {
+                            e.preventDefault();
+                            GM_setClipboard(a.href);
+                        }
+                        c.appendChild(a);
+                        $('.downDetail').appendChild(c);
+                    });
                 }
             },
             toggleFullPage: function() {
