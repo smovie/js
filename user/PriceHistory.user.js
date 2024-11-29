@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Price History
 // @namespace   abs
-// @version     1.1.2
+// @version     1.1.3
 // @description 在网上商店产品页面，自动插入价格历史。
 // @include     /^https?:\/\/((n?pc|m)?item(\.m)?|book|mvd)\.(yiyao)?jd\.(hk|com)\/.+\.html/
 // @include     /https?:\/\/www\.amazon\.cn\/(.+)?(dp\/|gp\/|mn\/detailApp)/
@@ -28,6 +28,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
     var gwdVerifyUrl = "https://www.gwdang.com/trend/";
     var gwdVerifyUrl2 = "https://www.gwdang.com/static_page/captcha/";
     var mmmVerifyUrl = "https://tool.manmanbuy.com/m/ValidateAlibaba.aspx";
+    var mmmWebUrl = "https://tool.manmanbuy.com/m/history.aspx?type=history_mobile_tool&url=";
     var gwdPUid;
     var ts = new Date().getTime();
 
@@ -444,7 +445,7 @@ window.addEventListener("DOMContentLoaded", ()=> {
                 var a = document.createElement("a");
                 c.title = ttl;
                 a.appendChild(c);
-                a.href = url; //'https://tool.manmanbuy.com/HistoryLowest.aspx?url=' + encodeURIComponent(location.href);
+                a.href = mmmWebUrl + encodeURIComponent(location.href); //'https://tool.manmanbuy.com/HistoryLowest.aspx?url=' + encodeURIComponent(location.href);
                 a.target = "_blank";
                 //imgNode.parentNode.insertBefore(a, imgNode);
                 imgNode.appendChild(a);
