@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Video Player Enhancement
-// @version     0.1.3
+// @version     0.1.5
 // @description
 // @include     /https?:\/\/(www|m|v)\.douyu(tv)?\.com/.*/
 // @include     /https?:\/\/live\.bilibili\.com/.+/
@@ -8,9 +8,13 @@
 // @include     /https://www\.age(fans|mys|dm)\.[\w]+\/(age\/)?player\/.+/
 // @include     /https:\/\/(www|m)\.youtube\.com\/watch.+/
 // @match       https://*.sp-flv.com*/*
-// @match       https://*.pornhub.com/*
+// @match       https://43.240.156.118:8443/*
+// @include     /https:\/\/\w+\.(pornhub|youporn|tube8)\.com\/.*/
+// @match       https://www.xvideos.com/*
+// @match       https://xhamster.com/*
 // @match       https://player.hanime.tv/*
 // @match       https://hanime1.me/*
+// @match       https://www.hentaicity.com/video/*
 // @match       https://live.qq.com/*
 // @match       https://*.cctv.com/*
 // @match       http://127.0.0.1/*
@@ -19,6 +23,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
+// @grant       GM_openInTab
 // ==/UserScript==
 
 //https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
@@ -41,10 +46,14 @@
         conf = bilibililive();
     } else if (loc.includes('huya.com')) {
         conf = huya();
-    } else if (loc.match(/age(fans|dm)\.[\w]+|sp-flv\.com/)) {
+    } else if (loc.match(/age(fans|dm)\.[\w]+|sp-flv\.com|43\.240\.156\.118/)) {
         conf = agefans();
-    } else if (loc.match(/vip\.mfhd\.me|pornhub\.com|ph666.me/)) {
+    } else if (loc.match(/(pornhub|youporn|tube8)\.com/)) {
         conf = phub();
+    } else if (loc.match(/xvideos\.com/)) {
+        conf = xvideos();
+    } else if (loc.match(/xhamster\.com/)) {
+        conf = xhamster();
     } else if (loc.match(/hanime\.tv/)) {
         conf = hanime();
     } else if (loc.match(/hanime1\.me/)) {
@@ -57,6 +66,8 @@
         conf = cctv();
     } else if (loc.match(/(mxdm|wjys)\d?\.\w+/)) {
         conf = mxdm();
+    } else if (loc.match('www.hentaicity.com')) {
+        conf = hentaicity();
     } else {
         conf = common();
     }
@@ -71,7 +82,8 @@
             @keyframes fastPlay { from {opacity: 1;} to {opacity: 0.5;} } .clock{float:right;opacity:0;} .topTitle{float:left;opacity:0;} \
             .vpeIcon::before {content: attr(vpeIcon);display:inline-block;width:36px;}'); //color: transparent;text-shadow: 0 0 0 #dd318a;-webkit-text-fill-color: transparent;-webkit-text-stroke: transparent;
         var c = configs || {};
-        var vs = configs.videoSelector || 'video';
+        var vs = c.videoSelector || 'video';
+        var disabledKey = c.disabledKey || [];
         var vpeInit = ()=> {
             if (!video) return;
             if (c.videoVolume) {
@@ -286,7 +298,7 @@
 
             wheelPanel.onmousemove = ()=> toggleInfoPanel();
             document.addEventListener('keydown', e => {
-                if (isTextNode(e.target)) {
+                if (isTextNode(e.target) || disabledKey.includes(e.code)) {
                     return;
                 }
                 if (['KeyW','KeyD','KeyF','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
@@ -316,7 +328,7 @@
                 }
             }, true);
             document.addEventListener('keyup', e => {
-                if (isTextNode(e.target)) {
+                if (isTextNode(e.target) || disabledKey.includes(e.code)) {
                     return;
                 }
                 if (['KeyW','KeyD','KeyF','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
@@ -711,6 +723,12 @@
                     bn.click();
                     setTimeout(()=> {$All('div>[type="checkbox"]', bn.parentNode).forEach(i=>i.click());bn.click();}, 1e2);
                 }
+                document.addEventListener('mouseup', e => {
+                    var n = e.target;
+                    if (e.which == 2 && n.nodeName == "P" && n.getAttribute('href').match(/^\/\d+/)) {
+                        GM_openInTab(location.origin + n.getAttribute('href'));
+                    }
+                });
             },
             toggleFullPage: function() {
                 $('[class*="webfull-screen-btn"] input').click();
@@ -774,28 +792,35 @@
     function phub() {
         GM_addStyle('body.fullpage .wide video-element,body.fullpage  .wide .video-element-wrapper-js{position: fixed !important; width: 100%; height: 100%; z-index: 5; } \
                 body.fullpage .dialog.rounded-container{z-index:6;} body.fullpage #header {z-index: -1;} body.fullpage {overflow:hidden;} \
-                .mgp_playingState .mgp_bigPlay, .mgp_overlayText, .mgp_contextMenu, #js-abContainterMain{display:none !important;} #relatedVideosCenter {width: 125%;} \
+                .mgp_playingState .mgp_bigPlay, .mgp_overlayText, .mgp_contextMenu, #js-abContainterMain, #pb_template{display:none !important;} \
                 #hd-rightColVideoPage {max-height: 850px;overflow-y: auto;} html.supportsGridLayout .wrapper .container{max-width:100%;width:100%;} \
-                .fullpage #player {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 9;height: 100% !important;} .video-actions-menu {height:20px !important;} \
+                .fullpage #player, .fullpage #videoContainer {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
+                .video-actions-menu {height:20px !important;} #ageDisclaimerMainBG{display:none;} #relatedVideosCenter {width: 125%;} \
                 html.supportsGridLayout #header.hasAdAlert {grid-template-rows: auto 0px 40px !important;} .video-actions-container{padding-top:0 !important;} \
-                #main-container #player .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} #ageDisclaimerMainBG{display:none;} \
+                #main-container #player .mgp_bigPlay, #videoContainer .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} \
                 #modalWrapMTubes {width: 0;height: 0;}');
-        setCookie('accessAgeDisclaimerPH', '1', 9999, '.pornhub.com');
-        setCookie('lang', 'en', 9999, '.pornhub.com');
+        if (loc.match('pornhub.com') && !getCookie('accessAgeDisclaimerPH')) {
+            setCookie('accessAgeDisclaimerPH', '1', 9999, '.pornhub.com');
+            setCookie('lang', 'en', 9999, '.pornhub.com');
+        } else if (loc.match('youporn.com') && getCookie('access')) {
+            setCookie('access', '1', 9999, 'www.youporn.com');
+        } else if (loc.match('tube8.com')) {
+            setCookie('access', '1', 9999, 'www.tube8.com');
+        }
         var vf = $('#modalWrapMTubes .buttonOver18');
         if (vf) vf.click();
         return {
             videoVolume: 0.2,
             eventCpt: true,
             init: function() {
-                let ls = JSON.parse(localStorage.mgp_player || {});
+                let ls = JSON.parse(localStorage.mgp_player || '{}');
                 if (ls.cinemaMode) {
                     $('body').classList.add('fullpage');
                 }
             },
             toggleFullPage: function() {
-                $('body').classList.toggle('fullpage', !$('#player').classList.contains('wide'));
-                $('#player').classList.toggle('wide', $('body').classList.contains('fullpage'));
+                $('body').classList.toggle('fullpage', !$('#player,#videoContainer').classList.contains('wide'));
+                $('#player,#videoContainer').classList.toggle('wide', $('body').classList.contains('fullpage'));
                 if ($('[class$="_cinema"],[class*="_cinema"][class$="_active"]')) {
                     $('[class$="_cinema"],[class*="_cinema"][class$="_active"]').dispatchEvent(new Event('mouseup'));
                 } else {
@@ -818,6 +843,69 @@
             }
         };
     }
+
+    function xvideos() {
+        GM_addStyle('.fullpage #hlsplayer {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
+            body.fullpage {overflow:hidden;} #page.video-page #content{z-index:999;} .videoad-title {  display: none; }');
+        var vl = JSON.parse(localStorage.player_volume || '{}');
+        if (vl.value != 0.2) {
+            vl.value = 0.2;
+            vl.expired = 2048497390.144;
+            localStorage.player_volume = JSON.stringify(vl);
+        }
+        return {
+            videoVolume: 0.2,
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('body').classList.toggle('fullpage');
+                    //$('img[title="Double player size"]').click();
+                }
+            },
+            toggleFullScreen: function() {
+                $('img[title="Fullscreen"]').click();
+            },
+            updateVolumeBar: function() {
+                if ($('.volume-bar-fill')) {
+                    $('.volume-bar-fill').style.width = `${video.volume*100}%`;
+                }
+            },
+            get wheelPanel() {
+                return $('#hlsplayer');
+            },
+            get videoSelector() {
+                return '#hlsplayer video';
+            }
+        };
+    }
+
+    function xhamster() {
+        GM_addStyle('.fullpage #player-container {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
+            body.fullpage {overflow:hidden;} main {z-index:9;} [data-role="promo-messages-wrapper"]{display:none !important;}');
+        return {
+            videoVolume: 0.2,
+            toggleFullPage: function() {
+                $('body').classList.toggle('fullpage', $('.large-mode[data-xp-tooltip="Enter large mode"]'));
+                if ($('.large-mode')) {
+                    $('.large-mode').click();
+                } else {
+
+                }
+
+            },
+            toggleFullScreen: function() {
+                $('.fullscreen-button').click();
+            },
+            get wheelPanel() {
+                return $('#player-container');
+            },
+            get videoSelector() {
+                return '#player-container video';
+            }
+        };
+    }
+
     function hanime() {
         return {
             videoVolume: 0.2,
@@ -934,6 +1022,28 @@
             }
         };
     }
+
+    function hentaicity() {
+        GM_addStyle('#playerz .fluid_theatre_mode {top: 0;z-index: 2048;height: 100% !important;} html:has(.fluid_theatre_mode) {overflow: hidden;}');
+        return {
+            videoVolume: 0.2,
+            disabledKey: ['ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight'],
+            toggleFullScreen: function() {
+                $('.fluid_button_fullscreen').click();
+            },
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('.fluid_button_theatre').click();
+                }
+            },
+            get wheelPanel() {
+                return $('.fluid_video_wrapper_video-id,video');
+            }
+        }
+    }
+
     function common() {
         return {
             videoVolume: 0.2,
