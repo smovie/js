@@ -9,9 +9,9 @@
 // @include     /https:\/\/(www|m)\.youtube\.com\/watch.+/
 // @match       https://*.sp-flv.com*/*
 // @match       https://43.240.156.118:8443/*
-// @include     /https:\/\/\w+\.(pornhub|youporn|tube8)\.com\/.*/
+// @include     /https:\/\/\w+\.(pornhub|youporn|tube8|thumbzilla|redtube)\.com\/.*/
 // @match       https://www.xvideos.com/*
-// @match       https://xhamster.com/*
+// @include     /https:\/\/(\w+\.)?xhamster\.com\/.*/
 // @match       https://player.hanime.tv/*
 // @match       https://hanime1.me/*
 // @match       https://www.hentaicity.com/video/*
@@ -24,6 +24,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
+// @run-at      document-body
 // ==/UserScript==
 
 //https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
@@ -48,7 +49,7 @@
         conf = huya();
     } else if (loc.match(/age(fans|dm)\.[\w]+|sp-flv\.com|43\.240\.156\.118/)) {
         conf = agefans();
-    } else if (loc.match(/(pornhub|youporn|tube8)\.com/)) {
+    } else if (loc.match(/(pornhub|youporn|tube8|thumbzilla|redtube)\.com/)) {
         conf = phub();
     } else if (loc.match(/xvideos\.com/)) {
         conf = xvideos();
@@ -240,6 +241,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                 } else if (e.which == 2 && !isTextNode(e.target)) {
+                    e.preventDefault();
                     toggleFullPage();
                 } else if (e.which == 3) {
                     this.rPressed = true;
@@ -794,39 +796,55 @@
                 body.fullpage .dialog.rounded-container{z-index:6;} body.fullpage #header {z-index: -1;} body.fullpage {overflow:hidden;} \
                 .mgp_playingState .mgp_bigPlay, .mgp_overlayText, .mgp_contextMenu, #js-abContainterMain, #pb_template{display:none !important;} \
                 #hd-rightColVideoPage {max-height: 850px;overflow-y: auto;} html.supportsGridLayout .wrapper .container{max-width:100%;width:100%;} \
-                .fullpage #player, .fullpage #videoContainer {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
+                .fullpage #player, .fullpage #videoContainer, .fullpage #redtube-player {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 9999;height: 100% !important;} \
                 .video-actions-menu {height:20px !important;} #ageDisclaimerMainBG{display:none;} #relatedVideosCenter {width: 125%;} \
                 html.supportsGridLayout #header.hasAdAlert {grid-template-rows: auto 0px 40px !important;} .video-actions-container{padding-top:0 !important;} \
-                #main-container #player .mgp_bigPlay, #videoContainer .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} \
+                #main-container #player .mgp_bigPlay, #videoContainer .mgp_bigPlay, #redtube_layout #redtube-player .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} \
                 #modalWrapMTubes {width: 0;height: 0;}');
-        if (loc.match('pornhub.com') && !getCookie('accessAgeDisclaimerPH')) {
+        if (loc.match('pornhub.com') && getCookie('accessAgeDisclaimerPH') != '1') {
             setCookie('accessAgeDisclaimerPH', '1', 9999, '.pornhub.com');
             setCookie('lang', 'en', 9999, '.pornhub.com');
-        } else if (loc.match('youporn.com') && getCookie('access')) {
+        } else if (loc.match('youporn.com') && getCookie('access') != '1') {
             setCookie('access', '1', 9999, 'www.youporn.com');
-        } else if (loc.match('tube8.com')) {
-            setCookie('access', '1', 9999, 'www.tube8.com');
+        } else if (loc.match('tube8.com') && getCookie('access') != '1') {
+            setCookie('access', '1', 9999);
+        } else if (loc.match('thumbzilla.com')) {
+            setCookie('accessAgeDisclaimerTZ', '1', 9999, '.thumbzilla.com');
+        } else if (loc.match('redtube.com')) {
+            setCookie('showAgeDisclaimer', '1', 9999, 'www.redtube.com');
         }
-        var vf = $('#modalWrapMTubes .buttonOver18');
+        var vf = $('#modalWrapMTubes .buttonOver18, #accessButton,#btn_agree');
         if (vf) vf.click();
+        var ls = JSON.parse(localStorage.mgp_player || '{}');
+        if (!ls.quality || ls.quality && ls.quality.quality != 1080) {
+            ls.quality = {auto: false, quality: 1080};
+            localStorage.mgp_player = JSON.stringify(ls);
+        }
+        var wideNode = '#player, #videoContainer, #redtube-player';
         return {
             videoVolume: 0.2,
             eventCpt: true,
             init: function() {
-                let ls = JSON.parse(localStorage.mgp_player || '{}');
                 if (ls.cinemaMode) {
                     $('body').classList.add('fullpage');
                 }
+                if ($('.mgp_cinema [data-text="Large Player"]')) {
+                    $('.mgp_cinema [data-text="Large Player"]').onclick = e =>{$('body').classList.add('fullpage');$(wideNode).classList.add('wide');};
+                }
+                if ($('.mgp_cinema [data-text="Small Player"]')) {
+                    $('.mgp_cinema [data-text="Small Player"]').onclick = e =>{$('body').classList.remove('fullpage');$(wideNode).classList.remove('wide')};
+                }
             },
             toggleFullPage: function() {
-                $('body').classList.toggle('fullpage', !$('#player,#videoContainer').classList.contains('wide'));
-                $('#player,#videoContainer').classList.toggle('wide', $('body').classList.contains('fullpage'));
-                if ($('[class$="_cinema"],[class*="_cinema"][class$="_active"]')) {
-                    $('[class$="_cinema"],[class*="_cinema"][class$="_active"]').dispatchEvent(new Event('mouseup'));
+                if (document.fullscreen) {
+                    document.exitFullscreen();
                 } else {
-
+                    $('body').classList.toggle('fullpage', !$(wideNode).classList.contains('wide'));
+                    $(wideNode).classList.toggle('wide', $('body').classList.contains('fullpage'));
+                    if ($('[class$="_cinema"],[class*="_cinema"][class$="_active"]')) {
+                        $('[class$="_cinema"],[class*="_cinema"][class$="_active"]').dispatchEvent(new Event('mouseup'));
+                    }
                 }
-
             },
             toggleFullScreen: function() {
                 if (document.fullscreen) {
@@ -846,7 +864,7 @@
 
     function xvideos() {
         GM_addStyle('.fullpage #hlsplayer {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
-            body.fullpage {overflow:hidden;} #page.video-page #content{z-index:999;} .videoad-title {  display: none; }');
+            body.fullpage {overflow:hidden;} .fullpage #page.video-page #content{z-index:999;} .videoad-title {  display: none; }');
         var vl = JSON.parse(localStorage.player_volume || '{}');
         if (vl.value != 0.2) {
             vl.value = 0.2;
@@ -855,12 +873,16 @@
         }
         return {
             videoVolume: 0.2,
+            init: function() {
+                if ($('img[title="Double player size"]')) {
+                    $('img[title="Double player size"]').onclick = e => {$('body').classList.toggle('fullpage');};
+                }
+            },
             toggleFullPage: function() {
                 if (document.fullscreen) {
                     document.exitFullscreen();
                 } else {
                     $('body').classList.toggle('fullpage');
-                    //$('img[title="Double player size"]').click();
                 }
             },
             toggleFullScreen: function() {
@@ -882,17 +904,38 @@
 
     function xhamster() {
         GM_addStyle('.fullpage #player-container {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 999;height: 100% !important;} \
-            body.fullpage {overflow:hidden;} main {z-index:9;} [data-role="promo-messages-wrapper"]{display:none !important;}');
+            body.fullpage {overflow:hidden;} .fullpage main {z-index:9;} .desktop-dialog-open:has(.parental-control-dialog) {display: none;} \
+            [data-role="promo-messages-wrapper"], [class^="cookiesAnnounce"]{display:none !important;}');
+        if ($('[data-role="parental-control-confirm-button"]')) {
+            $('[data-role="parental-control-confirm-button"]').click();
+        }
+        let ls = JSON.parse(localStorage['x-player-settings'] || '{}');
+        if (ls.quality != '1080p') {
+            ls.quality = '1080p';
+            localStorage['x-player-settings'] = JSON.stringify(ls);
+        }
+        if (getCookie('parental-control') != 'yes') {
+            setCookie('parental-control', 'yes', 9999, '.xhamster.com');
+            GM_addStyle('.xh-scroll-disabled{overflow:auto;}');
+        }
         return {
             videoVolume: 0.2,
-            toggleFullPage: function() {
-                $('body').classList.toggle('fullpage', $('.large-mode[data-xp-tooltip="Enter large mode"]'));
+            init: function() {
                 if ($('.large-mode')) {
-                    $('.large-mode').click();
-                } else {
-
+                    $('.large-mode').onmouseup = e =>{
+                        $('body').classList.toggle('fullpage', !$('.large-mode[data-xp-tooltip="Exit large mode"]'));
+                    }
                 }
-
+            },
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('body').classList.toggle('fullpage', !$('.large-mode[data-xp-tooltip="Exit large mode"]'));
+                    if ($('.large-mode')) {
+                        $('.large-mode').click();
+                    }
+                }
             },
             toggleFullScreen: function() {
                 $('.fullscreen-button').click();
