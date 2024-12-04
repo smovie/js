@@ -3,7 +3,7 @@
 // @author      Jerrymouse
 // @namespace   nana_vao_bilibili
 // @description B站的h5播放相关，原生右键菜单、显示时间线
-// @version     0.2.6
+// @version     0.2.7
 // @include     /https?:\/\/([^\.]+\.)?bilibili\.com/
 // @grant       unsafeWindow
 // @grant       GM_addStyle
@@ -31,7 +31,7 @@
     var showLikePer = false;
     var hideVd, hideAu;
 
-    GM_addStyle('.adblock-tips{display:none !important;}');
+    GM_addStyle('.adblock-tips, .bili-watch-later__tip--lab{display:none !important;} .webscreen-fix{overflow:hidden;}');
     if (!loc.match(/^https:\/\/live\.bilibili\.com\//)) {
         GM_addStyle('html.gray {-webkit-filter: grayscale(0) !important;filter: grayscale(0) !important;} ');
         GM_addStyle('.video-page-special-card-small,.video-page-game-card-small,.guo-chuang-area,.manga-card-list {display:none !important;} ');
@@ -42,9 +42,10 @@
     if (loc.match(/^https:\/\/www\.bilibili\.com\/(\?.*)?/)) {
         //document.addEventListener('mouseover', e=>{ console.log(e.target, e.target.nodeName)  });
         GM_addStyle('.bili-live-card, .floor-single-card, .video-page-special-card {display:none !important;}'); //hide live in index page
-        GM_addStyle('.hidevideo{float:right;bottom:0;position:sticky;cursor:pointer;display:none;margin-right:-17px;} .hideauthor{position:absolute;right:0;cursor:pointer;display:none;} \
-            .bili-video-card__info--tit:hover .hidevideo, .bili-video-card__info--bottom:hover .hideauthor {display: block;} \
-            .recommended-swipe {grid-column:1/2;grid-row:1/2;} ');
+        GM_addStyle('.hidevideo{float:right;bottom:0;position:sticky;cursor:pointer;display:none;margin-right:-17px;} \
+            .hideauthor{position:absolute;right:0;cursor:pointer;display:none;} \
+            .bili-video-card__info--tit:hover .hidevideo, .bili-video-card__info--bottom:hover .hideauthor,.up-detail-top:hover .hideauthor {display: block;} \
+            #i_cecream .recommended-swipe {grid-column:1/2;grid-row:1/2;} ');
         GM_addStyle('#app .video-sections-content-list {max-height:400px;height:auto !important;}');
         GM_addStyle('.recommended-container_floor-aside .container .feed-card,.recommended-container_floor-aside .container .bili-video-card \
             {margin-top: 0 !important;} \
@@ -78,6 +79,7 @@
         if (haus.length > 0) {
             //GM_addStyle(`.feed-card:has(${haus.join(",")}), .bili-video-card:has(${haus.join(",")}){display:none;}`);
         }
+
     }
 
     if (loc.match("https://t.bilibili.com/")) {
@@ -116,6 +118,10 @@
     var setPlayer = v => {
         var pl = $('#bilibiliPlayer,#bilibili-player,#live-player,div.bilibili-live-player-video-area,div.bilibili-live-player-video-danmaku');
         doClick($('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
+
+        if (localStorage.volume) {
+            v.volume = localStorage.volume;
+        }
 
         //单击下一视频按钮后，B站的弹幕按钮有问题 div.bilibili-player-video-btn-danmaku:not(video-state-danmaku-off)
         var dc = 0;
@@ -420,6 +426,10 @@
             setNewPlayerInfo();
         } else if (e.animationName == 'danmubutton') {
             //showTimeLineInFullMode();
+            if ($('.up-detail-top') && !$('.up-detail-top .hideauthor')) {
+                var ha = $C('span', {class:'hideauthor', title:'加入黑名单', text: '❌'});
+                $('.up-detail-top').appendChild(hideAuthor(ha, $('a.up-name').href.match(/\d+/)[0], $('a.up-name').textContent));
+            }
         } else if (e.animationName == 'playlistOrder') {
             e.target.onclick = ()=> {
                 plOrder = e.target.dataset.order;
@@ -452,10 +462,8 @@
                 return;
             }
             var biv = $('.bili-video-card__info--tit', n.parentNode);
-            var ha = $C('span', {class:'hideauthor', title:'加入黑名单'});
-            var hv = $C('span', {class:'hidevideo', title:'隐藏此视频'});
-            ha.textContent = '❌';
-            hv.textContent = '✖️';
+            var ha = $C('span', {class:'hideauthor', title:'加入黑名单', text: '❌'});
+            var hv = $C('span', {class:'hidevideo', title:'隐藏此视频', text: '✖️'});
             hv.onclick = ()=> {
                 var pn = n.parentNode.parentNode;
                 if (pn.parentNode.classList.contains('feed-card')) {
@@ -466,15 +474,12 @@
                 hideVd[bvid] = Date.now();
                 GM_setValue('hideVideo', hideVd);
             };
-            ha.onclick = ()=> {
-                if (confirm('把"' + baName + '"加入黑名单？')) {
-                    var d = `fid=${baid}&act=5&csrf=${getCookie('bili_jct')}`;
-                    XHR({url:'https://api.bilibili.com/x/relation/modify', method:'POST', headers: biliHeaders, data: d, isjson:true}).then(r=>{console.log('拉黑:',r)});
-                    $All(`.feed-card:has(a[href*="/${baid}"]), .bili-video-card:has(a[href*="/${baid}"])`).forEach(i=>i.remove());
-                }
-            };
+            hideAuthor(ha, baid, baName);
             if (loc.match(/^https:\/\/www\.bilibili\.com\/(\?.*)?/)) {
-                setTimeout(()=>{bia.appendChild(ha);biv.insertAdjacentElement('afterbegin', hv)}, 2e3);
+                setTimeout(()=>{
+                    bia.appendChild(ha);
+                    //biv.insertAdjacentElement('afterbegin', hv);
+                }, 2e3);
             }
             if (showLikePer) {
                 var vi = 'https://api.bilibili.com/x/web-interface/archive/stat?bvid=' + bvid;
@@ -494,6 +499,17 @@
         }
     });
 
+    function hideAuthor(node, id, name) {
+        node.onclick = ()=> {
+            if (confirm('把"' + name.trim() + '"加入黑名单？')) {
+                var d = `fid=${id}&act=5&csrf=${getCookie('bili_jct')}`;
+                XHR({url:'https://api.bilibili.com/x/relation/modify', method:'POST', headers: biliHeaders, data: d, isjson:true}).then(r=>{console.log('拉黑:',r)});
+                $All(`.feed-card:has(a[href*="/${id}"]), .bili-video-card:has(a[href*="/${id}"])`).forEach(i=>i.remove());
+            }
+        };
+        return node;
+    }
+
     GM_addStyle("video {animation:bilibili 1ms; outline:none;} @keyframes bilibili{from{opacity:.9;}to{opacity:1;}}");
     GM_addStyle(".room-info-down-row {animation:liveRoomInfo 1ms;} @keyframes liveRoomInfo{from{opacity:.9;}to{opacity:1;}}");
     GM_addStyle(".nav-con>.fr, .nav-wrapper-right .nav-con-ul,.nav-user-center .mini-favorite {animation:navload 1ms;} @keyframes navload{from{opacity:.9;}to{opacity:1;}}");
@@ -504,7 +520,7 @@
     GM_addStyle('#dbrating::before {content: "豆";color: green;font-size: 10px;font-weight: bold;} .media-rating {position: absolute;top: 22px;left: 420px;} #dbrating{position: absolute;left: 490px;top: 22px;height:44px;} #media_module .up-info-wrapper{float:right;margin-top:20px;}');
     GM_addStyle('#app {margin-top:0;} #toolbar_module{height:30px;} .media-wrapper {padding-top: 5px !important;} #media_module{padding-top: 6px;}');
     // block video or author, bilibili has included this function
-    //GM_addStyle(".bili-video-card__wrap > a, .bili-dyn-card-video {animation:bvca 1ms; outline:none;} @keyframes bvca{from{opacity:.9;}to{opacity:1;}} .vlike::before {content: '👍 '; }");
+    GM_addStyle(".bili-video-card__wrap > a, .bili-dyn-card-video {animation:bvca 1ms; outline:none;} @keyframes bvca{from{opacity:.9;}to{opacity:1;}} .vlike::before {content: '👍 '; }");
 
     if (location.href.match(/^https?:\/\/www\.bilibili\.com\/bangumi\//)) {
         GM_addStyle(".bilibili-player-video-subtitle {display: none !important;}");
@@ -516,10 +532,148 @@
     //waitForElements({selector: '.bpx-player-shadow-progress-area', callback: showTimeLineInFullMode});
 
     window.addEventListener('beforeunload', e => {
-        if (localStorage.timelineH != $('#timelineHeight').value) {
+        if ($('#timelineHeight') && localStorage.timelineH != $('#timelineHeight').value) {
             localStorage.timelineH = $('#timelineHeight').value;
         }
+        if ($('#bilibili-player video') && localStorage.volume != $('#bilibili-player video').volume) {
+            localStorage.volume = $('#bilibili-player video').volume;
+        }
+        if (loc.match(/^https:\/\/live\.bilibili\.com\/.+/)) {
+            var vs = JSON.parse(localStorage.videoStyle||'{}');
+            var rid = getLiveRoomId();
+            if (rid && vs[rid] != $('video').style.cssText && !isOriginalStyle($('video').style)) {
+                vs[rid] = $('video').style.cssText;
+                localStorage.videoStyle = JSON.stringify(vs);
+            }
+        }
     });
+
+    function isOriginalStyle(s) {
+        return s.top == '0px' && s.left == '0px' && s.width == '100%' && s.height == '100%';
+    }
+    function getLiveRoomId() {
+        return __NEPTUNE_IS_MY_WAIFU__ && __NEPTUNE_IS_MY_WAIFU__.roomInitRes.data.room_id || loc.match(/^https:\/\/live\.bilibili\.com\/\d+/) && loc.match(/^https:\/\/live\.bilibili\.com\/(\d+)/)[1];
+    }
+
+    if (loc.match(/^https:\/\/live\.bilibili\.com\/.+/)) {
+        setInterval(() => {
+        var uid = __LIVE_USER_LOGIN_STATUS__ && __LIVE_USER_LOGIN_STATUS__.uid;
+        if (uid && $('video')) {
+            var cfg = JSON.parse(localStorage['web-player-ui-config:'+uid]);
+            var vol = ($('video').volume * 100).toFixed(0);
+            if (cfg.volume.value != vol) {
+                cfg.volume.value = vol;
+                localStorage['web-player-ui-config:'+uid] = JSON.stringify(cfg);
+            }
+        }
+        }, 3e5);
+        waitForElements({selector:'#gift-control-vm .gift-control-panel', callback: n=>{
+            GM_addStyle('#videoAdjust, #setvideostyle {width: 80px;display: inline-block;height: 81px;} #videoAdjust button {width:18px;height:18px;}');
+            var adjNode = $CS(`<div id='videoAdjust'><div style="justify-content: center;display: flex;height: 27px;"><button id='vatop'>T</button></div>
+                    <div style="height: 27px;"><button id='valeft'>L</button><button style="margin-left: 2px;" id='vaplus'>+</button><button style="margin-left: 2px;" id='vasub'>-</button>
+                    <button style="float: right;" id='varight'>R</button></div><div style="display: flex;justify-content: center;height: 27px;"><button id='vabottom'>B</button></div></div>`);
+            var adjSetNode = $CS(`<div id='setvideostyle'><button id='setvsbtn'>SET</button></div>`);
+            n.appendChild(adjNode);
+            n.appendChild(adjSetNode);
+            var adjInt = 0;
+            var isMousedown = false;
+            var adjRT = 100;
+            $('#valeft').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.left = (parseInt(v.style.left) - 1) + 'px';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.left = (parseInt(v.style.left) - 1) + 'px'}, adjRT);
+                }
+            };
+            $('#varight').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.left = (parseInt(v.style.left) + 1) + 'px';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.left = (parseInt(v.style.left) + 1) + 'px'}, adjRT);
+                }
+            };
+            $('#vatop').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.top = (parseInt(v.style.top) - 1) + 'px';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.top = (parseInt(v.style.top) - 1) + 'px'}, adjRT);
+                }
+            };
+            $('#vabottom').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.top = (parseInt(v.style.top) + 1) + 'px';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.top = (parseInt(v.style.top) + 1) + 'px'}, adjRT);
+                }
+            };
+            $('#vaplus').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.width = v.style.height = (parseInt(v.style.width) + 1) + '%';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.width = v.style.height = (parseInt(v.style.width) + 1) + '%'}, adjRT);
+                }
+            };
+            $('#vasub').onmousedown = e => {
+                if (e.button == 0) {
+                    var v = $('video');
+                    v.style.width = v.style.height = (parseInt(v.style.width) - 1) + '%';
+                    isMousedown = true;
+                    adjInt = setInterval(()=>{if(isMousedown) v.style.width = v.style.height = (parseInt(v.style.width) - 1) + '%'}, adjRT);
+                }
+            };
+            $('#valeft').onmouseup = $('#varight').onmouseup = $('#vatop').onmouseup = $('#vabottom').onmouseup = $('#vaplus').onmouseup = $('#vasub').onmouseup = e => {
+                if (e.button == 0) {
+                    isMousedown = false;
+                    clearInterval(adjInt);
+                }
+            };
+            // document.addEventListener('keydown', e => {
+            //     if (e.code == 'ControlLeft') {
+            //         this.CtrlLeftDown = true;
+            //     } else if (this.CtrlLeftDown) {
+            //         e.preventDefault();
+            //         e.stopPropagation();
+            //         var v = $('video');
+            //         switch(e.code) {
+            //             case 'ArrowUp': v.style.top = (parseInt(v.style.top) + 1) + 'px'; break;
+            //             case 'ArrowDown': v.style.top = (parseInt(v.style.top) - 1) + 'px'; break;
+            //             case 'ArrowLeft': v.style.left = (parseInt(v.style.left) - 1) + 'px'; break;
+            //             case 'ArrowRight': v.style.left = (parseInt(v.style.left) + 1) + 'px'; break;
+            //             case 'NumpadAdd': v.style.width = v.style.height = (parseInt(v.style.width) + 1) + '%';break;
+            //             case 'NumpadSubtract': v.style.width = v.style.height = (parseInt(v.style.width) - 1) + '%';break;
+            //         }
+            //     }
+            // });
+            // document.addEventListener('keyup', e => {
+            //     if (e.code == 'ControlLeft') {
+            //         this.CtrlLeftDown = false;
+            //     }
+            // });
+            var vs = JSON.parse(localStorage.videoStyle||'{}');
+            var rid = getLiveRoomId();
+            var vSrc = $('video').src;
+            if (vs[rid]) {
+                $('video').style.cssText = vs[rid];
+            }
+            $('video').onpause = e => {
+                if ($('video').src != vSrc) {
+                    $('video').style.cssText = vs[rid];
+                    vSrc = $('video').src;
+                }
+            };
+            $('#setvsbtn').onclick = e=> {
+                if (vs[rid]) {
+                    $('video').style.cssText = vs[rid];
+                }
+            };
+
+        }, maxIntervals:100});
+    }
 
     function modAutoPlayButton() {
         var anbtn = $('.next-button');
