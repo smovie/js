@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Video Player Enhancement
-// @version     0.1.6
+// @version     0.1.7
 // @description
 // @include     /https?:\/\/(www|m|v)\.douyu(tv)?\.com/.*/
 // @include     /https?:\/\/live\.bilibili\.com/.+/
@@ -799,8 +799,8 @@
                 .fullpage #player, .fullpage #videoContainer, .fullpage #redtube-player {position: fixed !important;left: 0;top: 0;width: 100%;z-index: 9999;height: 100% !important;} \
                 .video-actions-menu {height:20px !important;} #ageDisclaimerMainBG{display:none;} #relatedVideosCenter {width: 125%;} \
                 html.supportsGridLayout #header.hasAdAlert {grid-template-rows: auto 0px 40px !important;} .video-actions-container{padding-top:0 !important;} \
-                #main-container #player .mgp_bigPlay, #videoContainer .mgp_bigPlay, #redtube_layout #redtube-player .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} \
-                #modalWrapMTubes {width: 0;height: 0;}');
+                #main-container #player .mgp_bigPlay, #videoWrapper #videoContainer .mgp_bigPlay, #redtube_layout #redtube-player .mgp_bigPlay {position: absolute;left: 15px;top: 15px;width:30px;height:30px;} \
+                #modalWrapMTubes {width: 0;height: 0;} .phimage:hover {width: 100% !important;height: 100%; } .phimage:hover ~ .thumbnail-info-wrapper {display: none;}');
         if (loc.match('pornhub.com') && getCookie('accessAgeDisclaimerPH') != '1') {
             setCookie('accessAgeDisclaimerPH', '1', 9999, '.pornhub.com');
             setCookie('lang', 'en', 9999, '.pornhub.com');
@@ -827,6 +827,7 @@
             init: function() {
                 if (ls.cinemaMode) {
                     $('body').classList.add('fullpage');
+                    if ($(wideNode)) $(wideNode).classList.add('wide');
                 }
                 if ($('.mgp_cinema [data-text="Large Player"]')) {
                     $('.mgp_cinema [data-text="Large Player"]').onclick = e =>{$('body').classList.add('fullpage');$(wideNode).classList.add('wide');};
