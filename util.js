@@ -83,7 +83,7 @@ function waitForElements(req) {
     var interval = req.interval || 300;
     var maxIntervals = req.maxIntervals || -1;
     var onlyFirstNdoe = req.onlyFirstNdoe || false;
-    var targetNodes = (selector === "function")? selector() : $All(selector);
+    var targetNodes = (typeof selector === "function")? selector() : $All(selector);
     var targetsFound = targetNodes && targetNodes.length > 0;
     if (targetsFound) {
         for (let targetNode of targetNodes) {
