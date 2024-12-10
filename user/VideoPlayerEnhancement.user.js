@@ -553,7 +553,7 @@
                 return $('demand-video');
             },
             get videoSelector() {
-                return ()=> {return $('#__video', $('demand-video').shadowRoot)};
+                return ()=> { if ($('demand-video')) return $All('#__video', $('demand-video').shadowRoot); else return null;};
             },
             get infoPanel() {
                 return $('demand-video').parentNode;
