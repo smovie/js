@@ -5,13 +5,13 @@
 // @include      /https?:\/\/www\.google\.[\w]{2,3}(\.[\w]{2,3})?\/((search|webhp).+|$)/
 // @include      https://encrypted.google.com/*
 // @grant        GM_addStyle
-// @version      1.2.2
+// @version      1.2.3
 // ==/UserScript==
 
 (function(){
     //show image size
     GM_addStyle(".isv-r.PNCib.BUooTd::after {  content: attr(data-ow)'x'attr(data-oh); font-size: 12px; float: right;  position: inherit;  background: rgba(128, 128, 128, .2); bottom: 60px;text-shadow: 1px 1px black; } .bRMDJf {background: none !important;} .bRMDJf img {position:relative; z-index:-1;}");
-    GM_addStyle('.gtlss_ww_dark {background:#202124; color:#ddd;} #tn_1 {text-align: left;} .qcTKEe .D0HoIc{justify-content: flex-start;} #hdtbMenus {display: inline-flex;}');
+    GM_addStyle('.gtlss_ww_dark {background:#202124; color:#ddd;} #tn_1 {text-align: left;} .qcTKEe .D0HoIc{justify-content: flex-start;}');
 
     var isDarkMode = false;
     if (document.querySelector('[data-darkmode="true"]')) {
@@ -272,7 +272,7 @@ function defaultShowSearchToolbar() {
     var toolbar = document.querySelector("#hdtbMenus");
     var appbar = document.querySelector("#appbar");
     if (toolbar && appbar) {
-        toolbar.className = "hdtb-td-o";
+        toolbar.className = "pZvJc YNk70c qCqYBc";
         appbar.className = 'appbar hdtb-ab-o';
     } else {
         // toolbar = document.querySelector('.ECgenc');
