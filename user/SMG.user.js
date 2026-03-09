@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 (function(){
-    GM_addStyle('#app .no-player {display:none;} #app .channel_name{font-size: 14px; margin: 0; line-height: 1;} #app .channel_item{min-width:40px;} \
+    GM_addStyle('#app .no-player,.video-js-control-bar {display:none;} #app .channel_name{font-size: 14px; margin: 0; line-height: 1;} #app .channel_item{min-width:40px;} \
         #app .channel-icon, #app .channel-icon img{width: 40px; height: 40px;} #app .channel_wrap {padding: 0;min-height: 100px;}');
     const observer = new MutationObserver((mutationsList, observer) => {
         for (let m of mutationsList) {
