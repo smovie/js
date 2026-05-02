@@ -12,7 +12,7 @@ function formatTime(t) {
     return (hours==0)?  minutes+' : '+seconds : hours+' : '+minutes+' : '+seconds;
 }
 function isTextNode(n) {
-    return n.localName == "textarea" || (n.localName == "input" && (n.type == "text" || n.type == "password") || n.contentEditable == 'true');
+    return n.localName == "textarea" || (n.localName == "input" && (n.type == "text" || n.type == "password" || n.type == "number") || n.contentEditable == 'true');
 }
 function $(css, dom) {
     return dom? dom.querySelector(css) : document.querySelector(css);
