@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Video Player Enhancement
-// @version     0.1.9
+// @version     0.1.10
 // @description
 // @include     /https?:\/\/(www|m|v)\.douyu(tv)?\.com/.*/
 // @include     /https?:\/\/live\.bilibili\.com/.+/
 // @include     https://www.huya.com/*
-// @include     /https://www\.age(fans|mys|dm)\.[\w]+\/(age\/)?player\/.+/
+// @include     /https://www\.age(fans|mys|dm)\.\w+\/(age\/)?player\/.+/
 // @include     /https:\/\/(www|m)\.youtube\.com\/watch.+/
 // @match       https://*.sp-flv.com*/*
 // @include      /https:\/\/.+\/\?url=age_.+/
@@ -17,12 +17,13 @@
 // @match       https://www.hentaicity.com/video/*
 // @include     /https:\/\/(sports|live)\.qq\.com\/.*/
 // @match       https://*.cctv.com/*
+// @match       https://*.olympicchannelchina.cn/*
 // @include     /https:\/\/(hxty\.live|idevkit\.com|haixing\.cc|haixing\.tv|video\.dunduiby\.com)\/.*/
 // @match       http://127.0.0.1/*
-// @include     /https?:\/\/[\w]+\.(mxdm|wjys|fsdm)\d+?\.\w+\/.*/
+// @include     /https?:\/\/\w+\.(mxdm|wjys|fsdm|dcc3|009nnn|xxv3)(\d+)?\.\w+\/.*play.*/
 // @include     /https://www\.aowu\.tv/play.*/
-// @include     /https?:\/\/([\w]+\.)?([\w]+)?av([\w]+)?\.[\w]+/
-// @require     https://raw.githubusercontent.com/smovie/js/refs/heads/main/util.js
+// @include     /https?:\/\/(\w+\.)?(\w+)?av(\w+)?\.\w+/
+// @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
@@ -49,7 +50,7 @@
         conf = bilibililive();
     } else if (loc.includes('huya.com')) {
         conf = huya();
-    } else if (loc.match(/age(fans|dm)\.[\w]+|sp-flv\.com|\?url=age_/)) {
+    } else if (loc.match(/age(fans|dm)\.\w+|sp-flv\.com|\?url=age_/)) {
         conf = agefans();
     } else if (loc.match(/(pornhub|youporn|tube8|thumbzilla|redtube)\.com/)) {
         conf = phub();
@@ -65,15 +66,15 @@
         conf = youtube();
     } else if (loc.match(/live\.qq\.com\//)) {
         conf = qqLive();
-    } else if (loc.match(/\.cctv\.com\//)) {
+    } else if (loc.match(/\.cctv\.com\/|olympicchannelchina\.cn/)) {
         conf = cctv();
-    } else if (loc.match(/(mxdm|wjys|fsdm)\d+?\.\w+/)) {
+    } else if (loc.match(/https?:\/\/(\w+\.)?(mxdm|wjys|fsdm|dcc3|009nnn|xxv3)(\d+)?\.\w+\/.*/)) {
         conf = mxdm();
     } else if (loc.match('www.hentaicity.com')) {
         conf = hentaicity();
     } else if (loc.match(/hxty.live|video\.dunduiby\.com/)) {
         conf = hxty();
-    } else if (loc.match(/av([\w]+)?\.[\w]+/)) {
+    } else if (loc.match(/av(\w+)?\.\w+/)) {
         conf = jav();
     } else if (loc.match(/aowu\.tv/)) {
         conf = aowu();
@@ -160,14 +161,19 @@
                 if (infoDiv.isFrozen) return;
                 if (info) centerSpan.textContent = info;
                 if ($('.clock')) {
-                    if (document.fullscreen) $('.clock').style.opacity = '1';
-                    else $('.clock').style.opacity = '0';
+                    if (document.fullscreen || document.fullPage) {
+                        $('.clock').style.opacity = '1';
+                    } else {
+                        $('.clock').style.opacity = '0';
+                    }
                 }
                 if ($('.topTitle')) {
                     if (document.fullscreen || document.fullPage) {
                         $('.topTitle').textContent = c.title;
                         $('.topTitle').style.opacity = '1';
-                    } else $('.topTitle').style.opacity = '0';
+                    } else {
+                        $('.topTitle').style.opacity = '0';
+                    }
                 }
                 infoDiv.style.opacity = '1';
                 infoDiv.style.transition = 'all 0.3s ease';
@@ -300,6 +306,32 @@
                 }
             }, bool);
 
+            v.onpause = e => {
+                infoDiv.style.opacity = '1';
+            };
+            v.onplaying = e => {
+                infoDiv.style.opacity = '0';
+            };
+            v.addEventListener('loadedmetadata', e=> {
+                let skipTime = $('#skipTime');
+                if (skipTime && skipTime.value) {
+                    let stv = parseInt(skipTime.value);
+                    if (v.currentTime < stv) {
+                        v.currentTime = stv;
+                    }
+                    if (localStorage.skipTime != stv) {
+                        localStorage.skipTime = stv;
+                    }
+                }
+                let pbr = $('#pbrate');
+                if (pbr && pbr.value) {
+                    let pbrv = parseFloat(pbr.value);
+                    v.playbackRate = pbrv;
+                    if (localStorage.playbackRate != pbrv) {
+                        localStorage.playbackRate = pbrv;
+                    }
+                }
+            });
             wheelPanel.addEventListener('dblclick', e => {
                 if (!this.rPressed) {
                     toggleFullScreen();
@@ -319,12 +351,13 @@
                 if (isTextNode(e.target) || disabledKey.includes(e.code)) {
                     return;
                 }
-                if (['KeyW','KeyD','KeyF','KeyP','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
+                if (['KeyW','KeyD','KeyF','KeyP','Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
                 switch(e.code) {
                     case 'KeyW': toggleFullPage(); break;
+                    case 'Enter':
                     case 'KeyF': toggleFullScreen(); break;
                     case 'KeyD': toggleDanmu();toggleInfoPanel(); break;
                     case 'KeyP': pictureInPicture(v); break;
@@ -350,7 +383,7 @@
                 if (isTextNode(e.target) || disabledKey.includes(e.code)) {
                     return;
                 }
-                if (['KeyW','KeyD','KeyF','KeyP','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
+                if (['KeyW','KeyD','KeyF','KeyP', 'Enter','ArrowUp', 'ArrowDown', 'ArrowLeft','ArrowRight','Space', 'ControlRight', 'ShiftRight', 'Period'].includes(e.code)) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -382,6 +415,7 @@
             v.requestPictureInPicture();
         }
     }
+
 
     function bilibililive() {
         var icon = '';
@@ -612,6 +646,7 @@
     function mxdm() {
         GM_addStyle('.index-logo {margin-right: 400px;margin-top: -20px;height:50px;} .fullPage {overflow:hidden !important;} .fullPage #player{position:fixed !important;z-index:999999;}');
         GM_addStyle('.fullPage .player-box-main {z-index:99;}');
+
         let tfp = ()=> {
             if (document.fullscreen) {
                 document.exitFullscreen();
@@ -629,16 +664,23 @@
             let cBtn = btn.cloneNode(true);
             btn.replaceWith(cBtn);
             cBtn.onclick = tfp;
+
+
         };
+
         waitForElements({selector: '.dplayer-full-in-icon', callback: rebuildDPFP});
+        waitForElements({selector: '.module > .module-heading > .module-title, .tag', callback: adjModel});
+        window.addEventListener('scroll', e=>{e.preventDefault();e.stopPropagation();}, true);// display float player when scroll
+
         return {
             toggleFullPage: tfp,
             toggleFullScreen: function() {
                 //$('.leleplayer-full .leleplayer-full-icon').click();
                 if (document.fullscreen) {
                     document.exitFullscreen();
-                } else {
-                    $('#player') && $('#player').requestFullscreen();
+                } else if ($('#player, .MacPlayer')) {
+                    let player = $('#player') || $('.MacPlayer');
+                    player.requestFullscreen();
                 }
             },
             updateVolumeBar: function() {
@@ -649,16 +691,18 @@
                 }
             },
             get wheelPanel() {
-                return $('#player, video');
+                return $('#player, video') || $('.MacPlayer');
             },
             get infoPanel() {
-                return $('#player') || $('video').parentNode;
+                return $('#player') || $('.MacPlayer') || $('video').parentNode;
             },
             get title() {
                 if(loc.match('fsdm') && $('.module-info-heading h1')) {
                     return $('.module-info-heading h1').innerText + ' ' + $('.module-play-list-link.active').innerText;
                 } else if($('h1.page-title')) {
                     return $('h1.page-title').textContent + (($('.episode'))? ' ' + $('.episode').textContent : '');
+                } else if ($('.infos h2')) {
+                    return $('.infos h2').textContent;
                 }
             }
         }
@@ -671,6 +715,8 @@
         //         allVideo[i].parentNode.parentNode.remove();
         //     }
         // }
+        //waitForElements({selector: 'video', callback: n=>{n.addEventListener('timeupdate', e=>{e.preventDefault();e.stopPropagation();}, true);} });
+        delete localStorage.spjx_settings;
         return {
             toggleFullPage: function() {
                 var fpb = $('.fullscn', parent.document);
@@ -1200,6 +1246,7 @@
     }
 
     function common() {
+        GM_addStyle('.fullpage video {position: fixed !important;width: 100%;z-index: 2;top: 0;left: 0;height: 100%;} .fullpage {overflow:hidden;}');
         return {
             videoVolume: 0.2,
             toggleFullScreen: function() {
@@ -1207,6 +1254,13 @@
                     document.exitFullscreen();
                 } else {
                     $('video').requestFullscreen();
+                }
+            },
+            toggleFullPage: function() {
+                if (document.fullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    $('body').classList.toggle('fullpage');
                 }
             },
             get wheelPanel() {
@@ -1218,9 +1272,23 @@
     function youtube() {
         GM_addStyle('#player-container-id.fullpage, #page-manager ytd-watch-flexy[theater] #player-container {position: fixed; z-index: 10005; width: 100%; top: 0; bottom: 0; background: black; } \
             .dialog-container{z-index: 6 !important;} .fullpage .html5-main-video { width: 100% !important; height: auto !important; } .html5-video-container{height:100%;} \
-            body:has(ytd-watch-flexy[theater]) {overflow:hidden;} .ytp-contextmenu, .ytp-popup{z-index:10006 !important;}');
+            body:has(ytd-watch-flexy[theater]) {overflow:hidden;} .ytp-contextmenu, .ytp-popup{z-index:10006 !important;} ');
         GM_addStyle('#ydd-button #ydd-download{font-size: 3rem;font-weight: bold;color: red;}'); //for download button
+        GM_addStyle('.hideDiv{display:none;} .html5-video-info-panel:hover .hideDiv{display:block;} #container .ytp-sfn-close {right:0;top:15px;} #container .ytp-sfn{top:-8px;}');
         let vol = JSON.parse(localStorage['yt-player-volume'] || '{}');
+        let event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true,  view: unsafeWindow, button: 2 });
+        document.addEventListener('keyup', e=> {
+            if(e.code=='KeyH' && !isTextNode(e.target)){
+                let v = $('.html5-main-video, video');
+                let log = $('div.ytp-menuitem:nth-child(8)');
+                if (!log && v) {
+                    v.dispatchEvent(event);
+                    log = $('div.ytp-menuitem:nth-child(8)');
+                }
+                log.click();
+                $All('.html5-video-info-panel-content > div').forEach(d=> { if(!d.textContent.match(/Connection Speed|Buffer Health/)) {d.classList.add('hideDiv')} });
+            }
+        });
         return {
             init: function() {
                 let v = $('.html5-main-video');
@@ -1364,6 +1432,47 @@
         };
         setInterval(startTime, 1000);
         return cNode;
+    }
+
+    function adjModel(p) {
+        if (p) {
+            var skipNode = $C('span', {class: 'adjModel', text: 'skip time'});
+            var skipTime = $C('input', {id:'skipTime', type: 'number'});
+            skipTime.value = localStorage.skipTime? localStorage.skipTime : '120';
+            skipTime.onkeyup = e => {
+                let stv = parseInt(skipTime.value);
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    skipTime.blur();
+                    if (video && video.currentTime < stv) {
+                        video.currentTime = stv;
+                    }
+                    if (localStorage.skipTime != skipTime.value) {
+                        localStorage.skipTime = skipTime.value;
+                    }
+                }
+            };
+            skipNode.appendChild(skipTime);
+            var pbrNode = $C('span', {class: 'adjModel', text: 'playback rate'})
+            var pbr = $C('input', {id: 'pbrate', type: 'number', step: 0.1});
+            pbr.value = localStorage.playbackRate? localStorage.playbackRate : '1.1';
+            pbr.onkeyup = e => {
+                let pbrv = parseFloat(pbr.value);
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    pbr.blur();
+                    if (video && video.playbackRate != pbrv) {
+                        video.playbackRate = pbrv;
+                    }
+                    if (localStorage.playbackRate != pbr.value) {
+                        localStorage.playbackRate = pbr.value;
+                    }
+                }
+            };
+            pbrNode.appendChild(pbr);
+            p.appendChild(skipNode);
+            p.appendChild(pbrNode);
+        }
     }
 
 })();
