@@ -5,7 +5,7 @@
 // @include     https://bgm.tv/*
 // @include     https://movie.douban.com/subject/*
 // @include     https://www.bilibili.com/bangumi/*
-// @include     /https?://www\.(mxdm\d?\.\w+|wjys\.cc)\/.*/
+// @include     /https?://www\.(mxdm\d?\.\w+|wjys\.cc|dcc3\.com)\/.*/
 // @include     /https://www\.aowu\.tv\/.*/
 // @include     /https://www\.295yhw\.com\/.*/
 // @include     /https://www\.fsdm\d+?\.com\/.*/
@@ -15,7 +15,7 @@
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
-// @version     0.1.9
+// @version     0.1.10
 // @author      -
 // @description 1/25/2023, 3:29:51 PM
 // ==/UserScript==
@@ -43,6 +43,7 @@
     var domains = GM_getValue('domains') || {};
 
     if (loc.match(/https:\/\/www\.age(fans|mys|dm)\.[\w]+/)) {
+        GM_addStyle('.tab-content {max-height: 400px;overflow-y: auto;}');
         var node = $('.detail_imform_name, #detailname a,.video_detail_title, .video_play_detail_wrapper .card-title');
         var insertPos = $('.report_div') && $('.report_div').parentNode || $('.video_list_box, #comment-anchor');
         if (node) {
@@ -155,14 +156,24 @@
         insertPos = $('.sidebar .navbar');
         cname = $('.module-info-heading h1').textContent;
         year = $('.module-info-tag .module-info-tag-link').textContent;
+    } else if (loc.match(/(dcc3|009nnn|xxv3)\.\w+\/(play|detail)/)) {
+        GM_addStyle('#rateinfo{width:250px; float:right;background: #dcdcdc;} .rateresult .rating-info .rate_score{width: 100%;display: inline;margin-top: -20px;} \
+            .pic {margin-left: -46px;}#rateinfo .rating-info span {margin-left: -1px;} #rateinfo .rateSiteName {padding-left: 0;} .oname {display: block;} .rateresult .result {margin-top: 0;}');
+        if (loc.match(/play/)) {
+            GM_addStyle('.pic {margin-left: -4px;} #rateinfo{margin-top:-100px}');
+        }
+        insertPos = $('.detail .cover, .playbox');
+        cname = $('.infos a') && $('.infos a').textContent || $('.container h2') && $('.container h2').textContent;
+        year = $('.clearfix > li:nth-child(3)') && $('.clearfix > li:nth-child(3)').textContent.match(/\d+/)[0] || $('.infos .tag') && $('.infos .tag').textContent.split('/')[1].trim();
     }
 
 
-    if (loc.match(/mxdm/)) {
-            if (domains.Mx != location.origin) {
-                domains.Mx = location.origin;
-                GM_setValue('domains', domains);
-            }
+    if (loc.match(/mxdm|dcc3/)) {
+        GM_addStyle('#search{width:400px;}.search-wd{width:auto;}');
+        if (domains.Mx != location.origin) {
+            domains.Mx = location.origin;
+            GM_setValue('domains', domains);
+        }
     } else if (loc.match(/wjys/)) {
         if (domains.Wjys != location.origin) {
             domains.Wjys = location.origin;
@@ -277,11 +288,11 @@
                     var dbYear = sc[sc.length-1];
                     var imgSrc = $('.pic img', s).src;
                     var mid = dbUrl.match(/\/subject\/(\d+)\//)[1];
-                    if (!$('.rating_nums', s)) {
-                        continue;
+                    var score = 'N/A', total = 'N/A';
+                    if ($('.rating_nums', s)) {
+                        score = $('.rating_nums', s).textContent;
+                        total = $('.rating_nums', s).nextElementSibling.textContent.match(/\d+/)[0];
                     }
-                    var score = $('.rating_nums', s).textContent;
-                    var total = $('.rating_nums', s).nextElementSibling.textContent.match(/\d+/)[0];
                     var data = {url:dbUrl, mid: mid, title: dbTitle, img: imgSrc, score:score, oname: dbOname, total: total, year:dbYear};
                     if (year == dbYear || (dbOname == oname && Math.abs(parseInt(year) - parseInt(dbYear)) < 2 )) {
                         //ul.appendChild(s);
@@ -654,10 +665,10 @@
         }
         var sites = {Douban: 'https://www.douban.com/search?cat=1002&q={keyword}', Age: (domains.Age || 'https://www.age.tv') + '/search?query={keyword}',
                      Bilibili: 'https://search.bilibili.com/bangumi?search_source=5&keyword={keyword}',
-                     Mx: (domains.Mx || 'https://www.mxdm.tv') + '/search/-------------.html?wd={keyword}',
+                     Mx: (domains.Mx || 'https://www.dcc3.com') + '/search/?wd={keyword}',
                      Bgm: 'https://bgm.tv/subject_search/{keyword}?cat=2', Wjys: (domains.Wjys || 'https://www.wjys.cc') + '/vodsearch.html?wd={keyword}',
                      Yh: (domains.Yh || 'https://www.295yhw.com') + '/search/-------------.html?wd={keyword}',
-                     Aowu: (domains.Aowu || 'https://www.aowu.tv') + '/search/-------------.html?wd={keyword}',
+                     Aowu: (domains.Aowu || 'https://www.aowu.tv') + '/vods/?wd={keyword}',
                      Fsdm: (domains.Fsdm || 'https://www.fsdm02.com') + '/vodsearch/-------------.html?wd={keyword}'
                     };
         var us = $C('select', {id:'unionSearch', style:'color: orange; background: #212124;font-size:16px;border-radius: 10px;', class: "hl-search-select hl-text-subs"});
@@ -665,20 +676,25 @@
             var opt = $C('option', {value: v});
             opt.textContent = k;
             us.appendChild(opt);
-            if (location.host.toUpperCase().match(k.toUpperCase())) {
+            if (v.toUpperCase().match(location.host.toUpperCase())) {
                 opt.selected = true;
             }
         }
-        var inputNode = $('#query, .search-input, .searchInputL, #hl-search-text');
+        var inputNode = $('#query, .search-input, .searchInputL, #hl-search-text, .search-wd');
         if (inputNode) {
             inputNode.insertAdjacentElement('beforebegin', us);
-            $('#button-addon2, .search-go, .searchBtnL, .search-input-sub, #hl-search-submit').onclick = ()=> {
-                var txt = inputNode.value;
-                if (!location.host.toUpperCase().match(us.options[us.selectedIndex].label.toUpperCase)) {
-                    GM_openInTab(us.value.replace('{keyword}', encodeURIComponent(txt)));
-                    return false;
-                }
-            };
+            inputNode.value = cname? cname : '';
+            let btn = $('#button-addon2, .search-go, .searchBtnL, .search-input-sub, #hl-search-submit, .search-btn');
+            if (btn) {
+                btn.removeAttribute('disabled');
+                btn.onclick = e => {
+                    var txt = inputNode.value;
+                    if (!location.host.toUpperCase().match(us.options[us.selectedIndex].label.toUpperCase)) {
+                        GM_openInTab(us.value.replace('{keyword}', encodeURIComponent(txt)));
+                        return false;
+                    }
+                };
+            }
             var title = $('.video_play_detail_wrapper .card-title, .video_detail_title, .page-title a') || $('.page-title');
             if (title) {
                 inputNode.value = title.textContent;
