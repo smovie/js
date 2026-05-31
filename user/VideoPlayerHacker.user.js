@@ -1,21 +1,21 @@
 // ==UserScript==
 // @name        Video Player Hacker
 // @namespace   Violentmonkey Scripts
-// @include     /https?:\/\/[\w]+\.(mxdm\d?\.\w+|wjys\d?\.cc)\/.*/
+// @include     /https?:\/\/(\w+\.)?(mxdm\d?|wjys\d?|dcc3|009nnn|xxv3)\.\w+\/.*/
 // @match       https://danmu.yhdmjx.com/m3u8.php*
 // @match       https://api.bytegooty.com/*
-// @include     /https?:\/\/([\w]+\.)?fsdm\d+\.com/
+// @include     /https?:\/\/(\w+\.)?fsdm\d+\.com/
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @grant       GM_setClipboard
+// @grant       GM_openInTab
 // @grant       unsafeWindow
 // @require     https://cdn.jsdelivr.net/gh/smovie/js@main/util.js
 // @require     https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js
 // @require     https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js
-// @require     https://cdn.yinghuazy.xyz/js/js/hls.js
-// @version     0.1.6
+// @version     0.1.7
 // @author      -
 // @description 2024/1/12 18:29:44, mxdm.tv, mxdm.fans
 // ==/UserScript==
@@ -36,34 +36,35 @@
     var line = null;
     var name = null;
     var hsSite = loc.match('fsdm')? 'fsHistory' : 'mxHistory';
-    var currSelector = 'div.selected .scroll-content a[class="selected"], .module-play-list-link.active';
+    var currSelector = 'div.selected .scroll-content a[class="selected"], .module-play-list-link.active, .playlist li .active';
+    var pre, nxt;
 
 
     if (loc.match(/danmu\.yhdmjx\.com\/m3u8.php|api\.bytegooty\.com/)) {
-        let c = window.console.log;
 
-        const observer = new MutationObserver((mutationsList, observer) => {
-            for (let m of mutationsList) {
-                if (m.target.nodeName =='VIDEO' && m.type == "attributes") {
-                    console.log("The " + m.attributeName + " attribute was modified.",m.target.src, m.oldValue);
-                    let vSrc = m.target.src;
-                    let vType = 'normal';
-                    if (m.target.src.match(/^blob/)) {
-                        vSrc = m.oldValue;
-                        vType = 'hls';
-                    }
-                    console.log("videoSrc:", vSrc);
-                    parent.postMessage({videoSrc: vSrc, type: vType}, '*');
-                    observer.disconnect();
-                }
-            }
-        }).observe(document.body, { attributes: true, childList: true, subtree: true, attributeOldValue: true });
         for(i=0;i<65635;i++)clearInterval(i);
         for(i=0;i<65635;i++)clearTimeout(i);
-        if ($('body').textContent.match('解析不到该播放地址')) {
-            parent.postMessage({videoSrc: 'error'}, '*');
-            c('video load error!');
-        }
+        // const observer = new MutationObserver((mutationsList, observer) => {
+        //     for (let m of mutationsList) {
+        //         if (m.target.nodeName =='VIDEO' && m.type == "attributes") {
+        //             console.log("The " + m.attributeName + " attribute was modified.",m.target.src, m.oldValue);
+        //             let vSrc = m.target.src;
+        //             let vType = 'normal';
+        //             if (m.target.src.match(/^blob/)) {
+        //                 vSrc = m.oldValue;
+        //                 vType = 'hls';
+        //             }
+        //             console.log("videoSrc:", vSrc);
+        //             parent.postMessage({videoSrc: vSrc, type: vType}, '*');
+        //             observer.disconnect();
+        //         }
+        //     }
+        // }).observe(document.body, { attributes: true, childList: true, subtree: true, attributeOldValue: true });
+
+        // if ($('body').textContent.match('解析不到该播放地址')) {
+        //     parent.postMessage({videoSrc: 'error'}, '*');
+        //     console.log('video load error!');
+        // }
         //window.clearInterval=window.clearTimeout=null;
         // var intval = setInterval(()=>{
         //     var s = $('video');
@@ -96,21 +97,24 @@
     });
 
     //var player_aaaa = {url: '50VtRCxDc%2FV%2F%2BvAa9vlHSEriFbkytw5X4V9aIwgIAR97ShhC5rkb6erJxVYlsJFiZQwWUDxrUVa%2FORFjGzZuQQ%3D%3D'};
-    if (loc.match(/mxdm\d+?\.\w+|wjys\d?\.\w+|fsdm\d+?\.\w+/)) { //#e111ef
+    if (loc.match(/mxdm\d+?\.\w+|wjys\d?\.\w+|fsdm\d+?\.\w+|(dcc3|009nnn|xxv3)\.\w+/)) { //#e111ef
         GM_addStyle('#mxoneweek-tabs{z-index:1;} body.play {overflow:auto;} .tips-box,.drop.pc,.video-player-handle-more,.video-info-share{display:none;} \
                 #cbNxtBtn{font-size: 20px; vertical-align: middle; padding: 2px 12px 0 5px;cursor: pointer;color: white;} #header .search-input{color:#e3e6eb !important} \
                 .yzmplayer-played, .dplayer-played, .dplayer-thumb {background: #fd3a63 !important;} #header .content {max-width: 1280px;} \
                 .nav .nav-menu-item{padding:0 8px;} .icon-reload::before{content:"\\e902";} .logo img{height:20px} .brand{margin:0;} .wapblock{float:right;} \
-                #reloadBtn {font-size: 20px;vertical-align: middle;padding: 2px 12px 0 5px;cursor: pointer;color: white;} .drop:hover .drop-content{display:block;} .drop-content{display:none;}');
+                #reloadBtn {font-size: 20px;vertical-align: middle;padding: 2px 12px 0 5px;cursor: pointer;color: white;} #history{display:none;} \
+                #historyNode:hover #history, .drop:hover #history{display:block;position:absolute;border-radius: 8px;min-width: 300px;max-width: 330px;line-height: 2;}');
         GM_addStyle('.showbar .yzmplayer-controller,.showbar .leleplayer-controller,.showbar .dplayer-controller {margin-bottom: 2px;opacity: 1 !important;padding:0 !important;} \
                 #history,#favlist {max-height: 400px;overflow: auto;scrollbar-width: thin; padding: 5px;font-size:14px;} #history .list-item-link, #favlist .list-item-link{padding-right:20px;} \
                 .leleplayer-bar-wrap, .leleplayer-bar, .dplayer-bar-wrap {width:100% !important;} .leleplayer-icons.leleplayer-icons-left {padding-left: 20px;}'); // show process bar
         GM_addStyle('.list-item:hover .delHistory,.list-item:hover .delFav {display: inline-block;} .delHistory,.delFav {right: 0;position: absolute;display: none;} .delHistory:hover,.delFav:hover{color:red;}');
         GM_addStyle('.diplayer-loading-icon, .qrcode, .dplayer-mask, li:has([title="Ai女友"]), #popup {display:none !important;} .mxoneweek-list .item-link span {max-width: 275px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;}');
-        GM_addStyle('.swiper-slide.navbar-item {white-space: nowrap;} .sidebar {  width: 235px;}');
-        clearOldHistory();
-        if (loc.match(/mxdm\d?\.\w+\/dongmanplay\/|wjys\d?\.\w+\/vodplay\/|fsdm\d+?\.\w+\/vodplay\//)) {
-            var lines = $All('.module-tab-item.tab-item');
+        GM_addStyle('.swiper-slide.navbar-item {white-space: nowrap;} .logo{display:none;} .sidebar {  width: 235px;padding-top:10px;} .module-item-note{font-size:16px} \
+                #pbrate, #skipTime {width: 60px;background: #9a9fa6;  margin: 0 8px; } .adjModel{padding-left:10px;} #historyNode {float: right;line-height: 64px;margin-right: 20px;font-size: 18px;} \
+                .module-tab-item small.no, .module-tab-item small{font-size:16px;}');
+        //clearOldHistory();
+        if (loc.match(/mxdm\d?\.\w+\/dongmanplay\/|wjys\d?\.\w+\/vodplay\/|fsdm\d+?\.\w+\/vodplay\/|(dcc3|009nnn|xxv3)\.com\/play\//)) {
+            var lines = $All('.module-tab-item.tab-item, .tabs a');
             var vi = getVideoInfo();
             ep = vi.ep;
             vid = vi.vid;
@@ -123,7 +127,9 @@
             GM_addStyle('.player-info .video-info-main{display:block;} .csTitle {vertical-align: top;} .dplayer-bar-time::after {content: attr(offset);margin-left:5px;display: inline-block;   white-space: nowrap;} \
                 .page-title a {  max-width: 490px;  display: inline-block;  white-space: nowrap;  text-overflow: ellipsis;  overflow: hidden; }');
 
-            $('#playleft').appendChild($C('div', {id: 'player', style:"position:absolute;left:0px;top:0px;width: 100%;height: 100%;background: black;"}));
+            if ($('#playleft')) {
+                $('#playleft').appendChild($C('div', {id: 'player', style:"position:absolute;left:0px;top:0px;width: 100%;height: 100%;background: black;"}));
+            }
 
             var errRep = $('.module-player-handle-item:has(.icon-report)'); // add a iframe link for fsdm
             if (errRep) {
@@ -153,7 +159,7 @@
                 };
             }
 
-            var nxtBtn = $('a.handle-btn, i.icon-next');
+            var nxtBtn = $('a.handle-btn') || $('i.icon-next') && $('i.icon-next').parentNode.parentNode || $('.icon-xiayiji') && $('.icon-xiayiji').parentNode;
             if (nxtBtn) {
                 setNextButton();
                 nxtBtn.onclick = e => {
@@ -161,13 +167,14 @@
                     playNext();
                 }
                 var autoPlayDiv = $CS('<div class="drop"><input id="autoPlayBtn" type="checkbox" style="-webkit-appearance: auto;"><span style="color: #8f8f8f;font-size: 12px;">自动播放</span></div>');
-                nxtBtn.insertAdjacentElement('beforebegin', autoPlayDiv);
+                nxtBtn.insertAdjacentElement('afterend', autoPlayDiv);
                 var autoPlayBtn = $('#autoPlayBtn');
                 autoPlayBtn.checked = GM_getValue('autoPlay') || false;
                 autoPlayBtn.onclick = ()=> {
                     //autoPlayBtn.checked = !autoPlayBtn.checked;
                     GM_setValue('autoPlay', autoPlayBtn.checked);
                 };
+
 
             }
             if (localStorage.videoVolume) {
@@ -178,8 +185,23 @@
             if (cEsp) {
                 cEsp.scrollIntoView({block: "center", inline: "nearest"});
             }
-
         }
+
+        if (loc.match(/(dcc3|009nnn|xxv3)\.com/)) {
+            GM_addStyle('#history {background: aliceblue;top:50px;} #history span {float: right;padding-right: 20px; } \
+                #cbNxtBtn::after {content: "⏯";font-size: 32px;line-height: 0;}  .copyVideoUrl {cursor: pointer;font-size:20px;opacity: 0.8;background:transparent;border: none;width: 46px;} \
+                #cbNxtBtn{padding:0;background:transparent;border: none;width: 46px;opacity: var(--art-control-opacity);}');
+            GM_addStyle('.fullPage #header,.fullPage #footer .totop {z-index:0} .fullPage .MacPlayer { position: fixed;  left: 0;  top: 0;  z-index: 10000; }');
+            GM_addStyle('.playlist .row li,.playlist .title,.playlist .tabs{margin-bottom: 5px;}.playlist .row a{line-height: 30px;font-size: 18px;}');
+            let hNode = $('#historyNode');
+            let hc = $('#header .container');
+            if (!hNode && hc) {
+                hNode = $C('div', {id: 'historyNode'});
+                hNode.appendChild($C('div', {'text': '历史'}));
+                hc.appendChild(hNode);
+            }
+        }
+
         var logo = $('.logo a');
         if (loc.match('fsdm') && logo) {
             logo.href = 'https://fsdm.top';
@@ -195,7 +217,7 @@
                 }
             }
         }
-        if (loc.match(/\/(show|type)\//)) {
+        if (loc.match(/\/(show|type)\//) && $('div.library-box:nth-child(2) > div:nth-child(1) > div:nth-child(2)')) {
             var other = $C('a', {href: '/show/riman---其他--------.html', class: 'library-item', style:'color:yellow'});
             other.textContent = '其他';
             $('div.library-box:nth-child(2) > div:nth-child(1) > div:nth-child(2)').appendChild(other);
@@ -333,11 +355,12 @@
     }
 
     function setHistoryView(isNext) {
-        var playPath = '/dongmanplay/';
-        if (!$('#history') && $('.header-op .drop')) {
-            playPath = '/vodplay/'
-            $('.drop-content.drop-history').style.display = 'none';
-            $('.header-op .drop').appendChild($C('div', {id: 'history', class: 'drop-content drop-history'}));
+        var playPath = loc.match(/fsdm/)? '/vodplay/' : '/play/';
+        var pathEnd = loc.match(/fsdm/)? '.html' : '/';
+        var hisNode = $('.header-op .drop, #historyNode');
+        if (!$('#history') && hisNode) {
+            if ($('.drop-content.drop-history')) {$('.drop-content.drop-history').style.display = 'none';}
+            hisNode.appendChild($C('div', {id: 'history', class: 'drop-content drop-history'}));
         } //need to do
         if (isNext) {
             var epNode = $(`#history a[href*="/${vid}-"] span`);
@@ -365,7 +388,7 @@
             if ($(currSelector)) {
                 //sp.textContent = $(currSelector).textContent;
             }
-            a.href = `${cDomain}${playPath}${id}-${v.l}-${v.e}.html`;
+            a.href = `${cDomain}${playPath}${id}-${v.l}-${v.e}${pathEnd}`;
             a.appendChild(i);
             a.appendChild(sp);
             a.title = v.n;
@@ -397,8 +420,11 @@
 
     function getVideoInfo() {
         var vi = loc.match(/[\d\w]+-\d+-\d+/)[0].split('-');
-        var nm = loc.match('fsdm')? vod_name : $('.page-title a').innerText;
-        return {vid: vi[0], line: vi[1], ep: vi[2], name: nm};
+        name = loc.match('fsdm')? vod_name : $('.page-title a, .infos h2 a').innerText;
+        vid = vi[0];
+        line = vi[1];
+        ep = vi[2];
+        return {vid: vi[0], line: vi[1], ep: vi[2], name: name};
     }
 
     function clearOldHistory() {
@@ -420,8 +446,9 @@
     function playNext() {
         localStorage.videoVolume = $('video').volume;
         var curr = $(currSelector);
-        var nxt = curr.nextElementSibling;
         var setNext = url => {
+            $('video').pause();
+            $('video').currentTime = 0;
             curr.classList.remove('selected', 'active');
             nxt.classList.add('selected', 'active');
             let po = $('.playon', curr);
@@ -436,40 +463,69 @@
                 } else {
                     YZN.play(url);
                 }
+            } else if (loc.match(/dcc3|009nnn|xxv3/) && typeof art !== 'undefined') {
+                nxt.appendChild($('em', curr));
+                //playM3u8($('video'), url, art);
+                //art.option.autoplay = true;
+                art.switchUrl(url).then(r=>art.play());
+                $('video').originVideoSrc = url;
             } else {
                 mxdm(url);
             }
 
-            $('video').pause();
-            $('video').currentTime = 0;
             unsafeWindow.toggleInfoPanel('加载下一集...'); // 'toggleInfoPanel' from 'Video Player Enhancement' user script
             //setInterval(()=>console.log('XXXX', dp.video.duration), 2e3);
             history.replaceState(null,'', nxt.href);
             loc = nxt.href;
-            setNextButton();
-            if($('.btn-pc')){ $('.btn-pc').textContent = nxt.innerText; }
+            let epTextNode = $('.btn-pc, .infos h2 em');
+            if(epTextNode){
+                epTextNode.textContent = nxt.innerText;
+            }
             //var ep = $('div.selected .scroll-content a[class="selected"] span').textContent;
-            document.title = document.title.replace(/第\d+集/, nxt.innerText);
-            var tt = $('.page-title a, .module-info-heading h1').title;
+            document.title = document.title.replace(/第\d+集/g, nxt.innerText);
+            //var tt = $('.page-title a, .module-info-heading h1').title;
             saveHistory(true);
             setHistoryView(true);
+            let lines = $All('#playSwiper a, .tabs a');
+            let ep = getVideoInfo().ep;
+            lines.forEach(a=> {
+                a.href = (a.href.match(/\.html/))? a.href.replace(/\d+\.html/, ep +'.html') : a.href.replace(/\d+\//, ep + '/');
+            });
+            if ($('.handle-btn a')) {
+                $('.handle-btn a').href = nxt.href;
+            }
+            setNextButton();
         };
-        if (nxt && nxt.nodeName == 'A' && nxt.href.match(/\/[\d\w]+-\d+-\d+\.html/)) {
-            var isSetNext = false;
+        if (nxt && nxt.nodeName == 'A' && nxt.href.match(/\/[\d\w]+-\d+-\d+\.html|\/\d+-\d+-\d+\//)) {
+            let isSetNext = false;
+            let nxtHref = nxt.href;
             if (nextUrl) {
                 setNext(nextUrl);
                 isSetNext = true;
                 nextUrl = null;
             }
-            XHR({url: nxt.href}).then(r=>{
-                var ss = r.match(/var player_aaaa=.+url\":\"([^\"]+)\",\"url_next\":\"([^\"]+)/);
-                if (!isSetNext) {
-                    setNext(ss[1]);
+            XHR({url: nxtHref}).then(r=>{
+                if (r.includes("/_guard/html.js")) {
+                    GM_openInTab(nxtHref, { active: true, insert: true });
+                    return;
                 }
-                nextUrl = ss[2];
+                if (loc.match(/fsdm/)) {
+                    let ss = r.match(/var player_aaaa=.+url\":\"([^\"]+)\",\"url_next\":\"([^\"]+)/);
+                    if (!isSetNext && ss) {
+                        setNext(ss[1]);
+                    }
+                    nextUrl = ss[2];
+                } else {
+                    let ss = r.match(/url:\s+?\'([^\']+)\'/);
+                    if (!isSetNext && ss) {
+                        setNext(ss[1]);
+                    }
+                }
+
             });
         }
     }
+
 
     function reloadVideo() {
         var a = $('.page-title.btn-pc');
@@ -484,15 +540,36 @@
     function setNextButton() {
         if (nxtBtn) {
             var curr = $(currSelector);
-            var nxt = curr.nextElementSibling;
+            pre = curr.previousElementSibling || curr.parentNode.previousElementSibling && curr.parentNode.previousElementSibling.firstChild;
+            nxt = curr.nextElementSibling || curr.parentNode.nextElementSibling && curr.parentNode.nextElementSibling.firstChild;
+            if (isDescOrder(pre, curr, nxt)) {
+                let temp = pre;
+                pre = nxt;
+                nxt = temp;
+            }
+            if (pre && pre.nodeName == 'A') {
+                // preBtn.style.display = 'inline-block';
+                // preBtn.href = pre.href;
+            } else {
+
+            }
             if (nxt && nxt.nodeName == 'A') {
                 nxtBtn.style.display = 'inline-block';
                 nxtBtn.href = nxt.href;
             } else {
                 nxtBtn.style.display = 'none';
-                $('#cbNxtBtn').style.display = 'none';
+                if ($('#cbNxtBtn')) {
+                    $('#cbNxtBtn').style.display = 'none';
+                }
             }
         }
+    }
+
+    function isDescOrder(p, c, n) {
+        if (p && parseInt(p.href.match(/\d+\.html|\d+\//)) > parseInt(c.href.match(/\d+\.html|\d+\//)) || n && parseInt(n.href.match(/\d+\.html|\d+\//)) < parseInt(c.href.match(/\d+\.html|\d+\//))) {
+            return true;
+        }
+        return false;
     }
 
     function mxdm(fUrl) {
@@ -504,6 +581,8 @@
         } else if (loc.match('fsdm')) {
             vDomain = 'https://api.bytegooty.com/';
             vDomainParse = vDomain + '/?url=';
+        } else if (typeof art !== 'undefined' && $('video')) {
+            $('video').originVideoSrc = art.option.url;
         }
         if (!fUrl && typeof player_aaaa !== 'undefined') {
             $All('#playleft iframe').forEach(f=>f.remove());
@@ -561,7 +640,7 @@
                             console.log('rebuilding video player ...', vid, ep);
                             $All('#playleft iframe').forEach(f=>f.remove());
                             if (dp) {
-                                dp.switchVideo({ url: msg});
+                                dp.switchVideo({ url: msg, type: type});
                             } else {
                                 dp = new DPlayer({
                                     container: document.getElementById('player'),
@@ -676,14 +755,17 @@
     }
 
     function initVideo(v) {
-        var pn = $('#bofang,.yzmplayer-play-icon, .dplayer-play-icon');
-        if (!$('.copyVideoUrl')) {
+        var pn = $('#bofang,.yzmplayer-play-icon, .dplayer-play-icon, .art-control-playAndPause');
+        if (!$('.copyVideoUrl') && pn) {
             var cb = $C('button', {class: 'copyVideoUrl', title: '复制视频地址'});
             pn.insertAdjacentElement('afterend', cb);
-            cb.onclick = e=> { GM_setClipboard($('#player').originVideoSrc); };
+            cb.onclick = e=> {
+                GM_setClipboard($('#player') && $('#player').originVideoSrc || $('video') && $('video').originVideoSrc || '');
+            };
         }
-        if (!$('#cbNxtBtn') && $('a.handle-btn,i.icon-next').style.display != 'none') {
-            var cloneNxtBtn = $('.icon-next').cloneNode(true);
+        let nxtBtn = $('a.handle-btn,i.icon-next') || $('.icon-xiayiji') && $('.icon-xiayiji').parentNode;
+        if (!$('#cbNxtBtn') && nxtBtn && nxtBtn.style.display != 'none') {
+            var cloneNxtBtn = $('.icon-next') && $('.icon-next').cloneNode(true) || $C('button');
             var reloadBtn = cloneNxtBtn.cloneNode(true);
             cloneNxtBtn.id = 'cbNxtBtn';
             cloneNxtBtn.title = '播放下集';
@@ -692,15 +774,28 @@
             reloadBtn.className = 'icon-reload';
             reloadBtn.title = '重新加载视频';
             reloadBtn.onclick = reloadVideo;
-            pn.insertAdjacentElement('afterend', reloadBtn);
+           // pn.insertAdjacentElement('afterend', reloadBtn);
             pn.insertAdjacentElement('afterend', cloneNxtBtn);
 
         }
+
+        // dcc3|009nnn|xxv3
+        let linesNum = $All('.list16 > li:nth-child(1) a');
+        let linesTab = $All('.tabs a');
+        let curr = $(currSelector);
+        if (linesTab.length > 0 && linesNum.length > 0 && curr) {
+            linesTab.forEach((t,i) => {
+                t.href = curr.href.replace(/-\d+-/, linesNum[i].href.match(/-\d+-/)[0]);
+            });
+        }
         v.onended = ()=> {
-            if (localStorage.videoVolume != v.volume) {
-                localStorage.videoVolume = v.volume;
+            console.log('Play Next:', v.currentTime, v.duration);
+            if (v.currentTime + 1 >= v.duration) {
+                if (localStorage.videoVolume != v.volume) {
+                    localStorage.videoVolume = v.volume;
+                }
+                if($('#autoPlayBtn').checked) playNext();
             }
-            if($('#autoPlayBtn').checked) playNext();
         };
         if (isHackJS) {
             $('#player').classList.remove('leleplayer-pause', 'yzmplayer-pause');
